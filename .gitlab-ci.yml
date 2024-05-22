@@ -1,0 +1,126 @@
+---
+include:
+  - project: 'osci/deployments/ci-deployment-templates'
+    ref: main
+    file: 'build-upload-image-template.yml'
+
+variables:
+  BUILD: "false"
+  PROJECT_NAME: signtractions
+  CI_REGISTRY: quay.io
+  CI_REGISTRY_REPO: jluza/signtractions
+  DOCKERFILE_PATH: docker/Dockerfile
+
+.python3-image:
+  image:
+    name: images.paas.redhat.com/exd-sp-guild-distribution/gitlab-python3-ci:2
+    entrypoint: [""]
+
+.runner-tags:
+  tags:
+    - shared
+
+stages:
+  - testing
+  - build
+
+default:
+  before_script:
+    - docker info
+    - export PATH="/root/.local/bin:$PATH"
+    - cp docker/2015-IT-Root-CA.pem /etc/pki/ca-trust/source/anchors/
+    - cp docker/2022-IT-Root-CA.pem /etc/pki/ca-trust/source/anchors/
+    - update-ca-trust
+
+python3:
+  extends:
+    - .python3-image
+    - .runner-tags
+  stage: testing
+  rules:
+    - if: '$BUILD != "true"'
+  before_script:
+    - pip3 install typing_extensions
+  script:
+    - pip3 install --user tox
+    - tox -v -e py3
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+
+bandit:
+  extends:
+    - .python3-image
+    - .runner-tags
+  stage: testing
+  rules:
+    - if: '$BUILD != "true"'
+  script:
+    - pip3 install --user tox
+    - tox -v -e bandit
+
+build-and-upload-image:
+  stage: build
+  extends: .build-and-upload-image
+
+owasp:
+  extends:
+    - .python3-image
+    - .runner-tags
+  stage: testing
+  variables:
+    OUTPUT_PATH: ".out"
+    _CODE_SCANNING_EXCLUSIONS: "${OUTPUT_PATH}"
+  before_script:
+    - mkdir -p ${OUTPUT_PATH}/dependency-check
+  rules:
+    - if: '$BUILD != "true"'
+  script:
+    - VERSION=$(curl -s https://jeremylong.github.io/DependencyCheck/current.txt)
+    - curl -L "https://github.com/jeremylong/DependencyCheck/releases/download/v$VERSION/dependency-check-$VERSION-release.zip"
+      --output dependency-check.zip
+    - unzip dependency-check.zip
+    - ./dependency-check/bin/dependency-check.sh
+      --scan .
+      --enableExperimental
+      --failOnCVSS 4
+      --out "${OUTPUT_PATH}/dependency-check"
+      --suppression owasp/dependency_check_supressions.xml
+      --nvdApiKey ${NVD_API_KEY}
+      --disableKnownExploited
+      --disableMSBuild
+      --disableNodeJS
+      --disableYarnAudit
+      --disablePnpmAudit
+      --disableNodeAudit
+      --disableRubygems
+      --disableBundleAudit
+      --disableCocoapodsAnalyzer
+      --disableSwiftPackageManagerAnalyzer
+      --disableSwiftPackageResolvedAnalyzer
+      --disableAutoconf
+      --disableOpenSSL
+      --disableCmake
+      --disableArchive
+      --disableJar
+      --disableComposer
+      --disableCpan
+      --disableDart
+      --disableOssIndex
+      --disableCentral
+      --disableNuspec
+      --disableNugetconf
+      --disableAssembly
+      --disableGolangDep
+      --disableGolangMod
+      --disableMixAudit
+      --disableRetireJS
+      --disablePyDist
+      --disablePoetry
+  artifacts:
+    paths:
+      - ${OUTPUT_PATH}/dependency-check
+    when: always
+    expire_in: 1 month

@@ -33,7 +33,7 @@ def get_requirements():
 
 
 setup(
-    name="sign-tractions",
+    name="signtractions",
     version="0.0.1",
     description="quay-tractions",
     long_description="",
