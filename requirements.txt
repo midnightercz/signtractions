@@ -1,0 +1,12 @@
+requests
+requests_kerberos
+pytractions @ git+https://github.com/midnightercz/pytractions.git
+gssapi
+koji
+pubtools
+docker
+paramiko
+pubtools-pyxis
+urllib3<2.0.0
+pubtools-quay
+pubtools-sign
