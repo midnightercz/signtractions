@@ -2,7 +2,7 @@ import pytest
 
 from pytractions.base import In, TList, Res
 
-from signtractions.resources.signing_wrapper import CosignSignerSettings
+from signtractions.resources.signing_wrapper import SignerWrapperSettings
 from signtractions.resources.fake_signing_wrapper import FakeCosignSignerWrapper
 from signtractions.tractions.signing import (
     SignEntriesFromContainerParts,
@@ -47,13 +47,7 @@ def test_sign_entries_from_container_parts():
 def test_sign_sign_entries():
     fsw = FakeCosignSignerWrapper(
         config_file="test",
-        settings=CosignSignerSettings(
-            quay_namespace="quay_namespace",
-            quay_host="quay_host",
-            quay_user="quay_user",
-            quay_password="quay_password",
-            dest_quay_api_token="token",
-        ),
+        settings=SignerWrapperSettings(),
     )
     fsw._entry_point_returns[
         (
@@ -88,13 +82,7 @@ def test_sign_sign_entries():
 def test_sign_sign_entries_fail():
     fsw = FakeCosignSignerWrapper(
         config_file="test",
-        settings=CosignSignerSettings(
-            quay_namespace="quay_namespace",
-            quay_host="quay_host",
-            quay_user="quay_user",
-            quay_password="quay_password",
-            dest_quay_api_token="token",
-        ),
+        settings=SignerWrapperSettings(),
     )
     fsw._entry_point_returns[
         (

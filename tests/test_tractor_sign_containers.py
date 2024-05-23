@@ -4,7 +4,7 @@ import pytest
 from pytractions.base import TList, Res, Arg, In, Out
 
 from signtractions.tractors.t_sign_containers import SignContainers
-from signtractions.resources.signing_wrapper import CosignSignerSettings
+from signtractions.resources.signing_wrapper import CosignSignerSettings, SignerWrapperSettings
 from signtractions.models.containers import ContainerParts
 from signtractions.models.signing import SignEntry
 
@@ -16,13 +16,7 @@ from signtractions.resources.fake_quay_client import FakeQuayClient
 def fake_cosign_wrapper():
     return FakeCosignSignerWrapper(
         config_file="test",
-        settings=CosignSignerSettings(
-            quay_namespace="quay_namespace",
-            quay_host="quay_host",
-            quay_user="quay_user",
-            quay_password="quay_password",
-            dest_quay_api_token="token",
-        ),
+        settings=SignerWrapperSettings()
     )
 
 

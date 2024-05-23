@@ -1,4 +1,5 @@
 FROM quay.io/jluza/pytractions:latest
+LABEL quay.expires-after=2d
 COPY . /workspace
 RUN microdnf install -y gcc krb5-devel python3-devel git python3-qpid-proton openssl-devel tar
 RUN pip install --prefix /usr/ certifi krb5 
