@@ -409,7 +409,6 @@ class CosignSignerWrapper(SignerWrapper):
 
     label: str = "cosign_signer"
     pre_push: bool = False
-    settings: CosignSignerSettings
 
     _entry_point_conf = ["pubtools-sign", "modules", "pubtools-sign-cosign-container-sign"]
 

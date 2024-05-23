@@ -63,7 +63,7 @@ class SignContainers(Tractor):
     o_sign_entries: Out[TList[Out[SignEntry]]] = t_flatten_sign_entries.o_flat
 
     d_: str = """
-    Sign container images provided on input in cosign wrapper.
+    Sign container images provided as input in cosign wrapper with signing keys provided as input.
 """
     d_i_task_id: str = "Task ID to identify signing request."
     d_i_container_image_references: str = "List of container image references to sign."

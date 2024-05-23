@@ -22,6 +22,10 @@ class SignSignEntries(Traction):
     i_task_id: In[int]
     i_sign_entries: In[TList[In[SignEntry]]]
 
+    d_: str = "Sign provided SignEntries with signer wrapper."
+    d_i_sign_entries: str = "List of SignEntry objects to sign."
+    d_i_task_id: str = "Task id used to identify signing requests."
+
     def _run(self, on_update: OnUpdateCallable = None) -> None:
         self.r_signer_wrapper.r.sign_containers(
             [x.data for x in self.i_sign_entries.data],
@@ -40,6 +44,10 @@ class STMDSignSignEntries(STMD):
     i_task_id: STMDSingleIn[int]
     i_sign_entries: In[TList[In[TList[In[SignEntry]]]]]
 
+    d_: str = "Sign provided SignEntries with signer wrapper. STMD version."
+    d_i_sign_entries: str = "List of List of SignEntry objects to sign."
+    d_i_task_id: str = "Task id used to identify signing requests."
+
 
 class SignEntriesFromContainerParts(Traction):
     """Create sign entries from container parts."""
@@ -47,6 +55,13 @@ class SignEntriesFromContainerParts(Traction):
     i_container_parts: In[ContainerParts]
     i_signing_key: In[str]
     o_sign_entries: Out[TList[Out[SignEntry]]]
+
+    d_: str = """Create sign entries from container parts.
+    For each pair of digest and arch in container parts, create a SignEntry object.
+    """
+    d_i_signing_key: str = "Signing key to use for signing."
+    d_i_container_parts: str = "Container parts to create sign entries from."
+    d_o_sign_entries: str = "List of SignEntry objects"
 
     def _run(self, on_update: OnUpdateCallable = None) -> None:
         for digest, arch in zip(
@@ -79,3 +94,11 @@ class STMDSignEntriesFromContainerParts(STMD):
     i_signing_key: In[TList[In[str]]]
     i_container_parts: In[TList[In[ContainerParts]]]
     o_sign_entries: Out[TList[Out[TList[Out[SignEntry]]]]]
+
+    d_: str = """Create sign entries from container parts.
+    For each pair of digest and arch in container parts, create a SignEntry object.
+    STMD version
+    """
+    d_i_signing_key: str = "List of signing key to use for signing."
+    d_i_container_parts: str = "List of container parts to create sign entries from."
+    d_o_sign_entries: str = "List of List of SignEntry objects"

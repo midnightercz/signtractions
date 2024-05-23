@@ -14,6 +14,10 @@ class ParseCotainerImageReference(Traction):
     i_container_image_reference: In[str]
     o_container_parts: Out[ContainerParts]
 
+    d_: str = """Parser container image reference into ContainerParts model"""
+    d_i_container_image_reference: str = "Container image reference to parse"
+    d_o_container_parts: str = "Parsed container parts"
+
     def _run(self, on_update: OnUpdateCallable = None) -> None:
         registry, rest = self.i_container_image_reference.data.split("/", 1)
         if "@" in rest:
@@ -39,6 +43,9 @@ class STMDParseContainerImageReference(STMD):
     i_container_image_reference: In[TList[In[str]]]
     o_container_parts: Out[TList[Out[ContainerParts]]]
 
+    d_: str = """Parser container image reference into ContainerParts model. STMD version."""
+    d_i_container_image_reference: str = "List of container image references to parse"
+    d_o_container_parts: str = "List of Parsed container parts"
 
 class PopulateContainerDigest(Traction):
     """Fetch digest(s) for ContainerParts if there isn't any."""
@@ -47,11 +54,14 @@ class PopulateContainerDigest(Traction):
     o_container_parts: Out[ContainerParts]
     r_quay_client: Res[QuayClient]
 
-    d_: str = """Fetch digest(s) for ContainerParts if there isn't any
+    d_: str = """Fetch digest(s) for ContainerParts if there aren't any
 
     If fetched manifest by tag is manifest lists, populate also digests for manifests in the
     manifest list + digest of the list itself.
     """
+    d_i_container_parts: str = "Container parts to fetch digest for"
+    d_o_container_parts: str = "Container parts with digests populated (or unchanged)"
+    d_r_quay_client: str = "Quay client to fetch manifest"
 
     def _run(self, on_update: OnUpdateCallable = None) -> None:
         self.o_container_parts.data = self.i_container_parts.data
@@ -101,3 +111,12 @@ class STMDPopulateContainerDigest(STMD):
     i_container_parts: In[TList[In[ContainerParts]]]
     o_container_parts: Out[TList[Out[ContainerParts]]]
     r_quay_client: Res[QuayClient]
+
+    d_: str = """Fetch digest(s) for ContainerParts if there aren't any
+
+    If fetched manifest by tag is manifest lists, populate also digests for manifests in the
+    manifest list + digest of the list itself.
+    """
+    d_i_container_parts: str = "Container parts to fetch digest for"
+    d_o_container_parts: str = "Container parts with digests populated (or unchanged)"
+    d_r_quay_client: str = "Quay client to fetch manifest"
