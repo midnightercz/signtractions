@@ -26,7 +26,6 @@ stages:
 
 default:
   before_script:
-    - docker info
     - export PATH="/root/.local/bin:$PATH"
     - cp docker/2015-IT-Root-CA.pem /etc/pki/ca-trust/source/anchors/
     - cp docker/2022-IT-Root-CA.pem /etc/pki/ca-trust/source/anchors/
