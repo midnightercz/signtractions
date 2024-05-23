@@ -1,0 +1,51 @@
+# signtractions
+
+## What is signtractions
+
+Signtractions project is set of pytraction tractions, tractors, models and resources which wraps functionality of pubtools-sign project to provide
+containerized container singing.
+
+## How to use signtractions
+
+### Locally
+1. Install signtractions on your local machine
+2. Run following python command to excute tractor or traction from signtractions
+```
+cat run_arguments.yml | python -m pytractions.cli run signtractions.<path-to-traction/tractor-you-want-to-run>:<Traction-or-Tractor-Class>
+```
+
+### In Container
+2. Run following python command to excute tractor or traction from signtractions in a container
+```
+cat run_arguments.yml | podman -v userdata:/userdata run -i signtractions:latest run signtractions.<path-to-traction/tractor-you-want-to-run>:<Traction-or-Tractor-Class>
+```
+
+### Tekton task
+1. To generate tekton Task spec you can run
+```
+podman signtractions:latest generate_tekton_task signtractions.<path-to-traction/tractor-you-want-to-run>:<Traction-or-Tractor-Class> quay.io/jluza/signtractions:latest
+```
+2. To generate tekton TaskRun spec you can run
+```
+podman signtractions:latest generate_tekton_task_run signtractions.<path-to-traction/tractor-you-want-to-run>:<Traction-or-Tractor-Class> quay.io/jluza/signtractions:latest
+```
+
+3. To generate pipeline instead of task, you just pass `--type tractor` after `'generate_tekton_task_run'`. Only tractors can be generated as tekton pipelines
+
+#### More info about pytractions
+More info about framework used to build this project can be found here:
+https://github.com/midnightercz/pytractions/
+Or by running
+```
+podman run -p 8501:8501 signtractions:latest web
+```
+ 
+---
+##Generated part
+
+## Available tractions
+$TRACTIONS_LIST
+
+
+## Available tractors
+$TRACTORS_LIST
