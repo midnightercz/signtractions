@@ -32,6 +32,18 @@ podman signtractions:latest generate_tekton_task_run signtractions.<path-to-trac
 
 3. To generate pipeline instead of task, you just pass `--type tractor` after `'generate_tekton_task_run'`. Only tractors can be generated as tekton pipelines
 
+
+### Generating default inputs
+1. To generate yaml file with default inputs used to feed running tractor or tractions (run_arguments.yml in examples above) you can run
+```
+python -m pytractions.cli generate_inputs signtractions.<path-to-traction/tractor-you-want-to-run>:<Traction-or-Tractor-Class>
+```
+or
+```
+podman signtractions:latest generate_inputs signtractions.<path-to-traction/tractor-you-want-to-run>:<Traction-or-Tractor-Class>
+```
+
+
 #### More info about pytractions
 More info about framework used to build this project can be found here:
 https://github.com/midnightercz/pytractions/
@@ -43,9 +55,9 @@ podman run -p 8501:8501 signtractions:latest web
 ---
 ##Generated part
 
-## Available tractions
+## Available tractions in this project
 $TRACTIONS_LIST
 
 
-## Available tractors
+## Available tractors in this project
 $TRACTORS_LIST
