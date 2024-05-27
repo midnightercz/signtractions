@@ -47,6 +47,7 @@ class STMDParseContainerImageReference(STMD):
     d_i_container_image_reference: str = "List of container image references to parse"
     d_o_container_parts: str = "List of Parsed container parts"
 
+
 class PopulateContainerDigest(Traction):
     """Fetch digest(s) for ContainerParts if there isn't any."""
 
@@ -65,17 +66,25 @@ class PopulateContainerDigest(Traction):
 
     def _run(self, on_update: OnUpdateCallable = None) -> None:
         self.o_container_parts.data = self.i_container_parts.data
-        if len(self.i_container_parts.data.digests):
-            return
+        if self.i_container_parts.data.tag:
+            manifest_str = self.r_quay_client.r.get_manifest(
+                "{}/{}:{}".format(
+                    self.i_container_parts.data.registry,
+                    self.i_container_parts.data.image,
+                    self.i_container_parts.data.tag,
+                ),
+                raw=True,
+            )
+        else:
+            manifest_str = self.r_quay_client.r.get_manifest(
+                "{}/{}@{}".format(
+                    self.i_container_parts.data.registry,
+                    self.i_container_parts.data.image,
+                    self.i_container_parts.data.digests[0],
+                ),
+                raw=True,
+            )
 
-        manifest_str = self.r_quay_client.r.get_manifest(
-            "{}/{}:{}".format(
-                self.i_container_parts.data.registry,
-                self.i_container_parts.data.image,
-                self.i_container_parts.data.tag,
-            ),
-            raw=True,
-        )
         manifest = json.loads(manifest_str)
         self.o_container_parts.data = ContainerParts(
             registry=self.i_container_parts.data.registry,

@@ -4,7 +4,7 @@ import pytest
 from pytractions.base import TList, Res, Arg, In, Out
 
 from signtractions.tractors.t_sign_containers import SignContainers
-from signtractions.resources.signing_wrapper import CosignSignerSettings, SignerWrapperSettings
+from signtractions.resources.signing_wrapper import SignerWrapperSettings
 from signtractions.models.containers import ContainerParts
 from signtractions.models.signing import SignEntry
 
@@ -14,10 +14,7 @@ from signtractions.resources.fake_quay_client import FakeQuayClient
 
 @pytest.fixture
 def fake_cosign_wrapper():
-    return FakeCosignSignerWrapper(
-        config_file="test",
-        settings=SignerWrapperSettings()
-    )
+    return FakeCosignSignerWrapper(config_file="test", settings=SignerWrapperSettings())
 
 
 @pytest.fixture
@@ -225,7 +222,8 @@ def test_sign_containers_tags_ml(fix_manifest_list, fake_cosign_wrapper, fake_qu
 
 def test_sign_containers_digests(fix_manifest_v2s2, fake_cosign_wrapper, fake_quay_client):
     fake_quay_client.populate_manifest(
-        "quay.io/namespace/image:1",
+        "quay.io/namespace/image@sha256:6ef06d8c90c863ba4eb4297f10"
+        "73ba8cb28c1f6570e2206cdaad2084e2a4715d",
         "application/vnd.docker.distribution.manifest.v2+json",
         False,
         json.dumps(fix_manifest_v2s2),
@@ -301,7 +299,8 @@ def test_sign_containers_digests(fix_manifest_v2s2, fake_cosign_wrapper, fake_qu
 
 def test_sign_containers_digests_ml(fix_manifest_list, fake_cosign_wrapper, fake_quay_client):
     fake_quay_client.populate_manifest(
-        "quay.io/namespace/image:1",
+        "quay.io/namespace/image@sha256:d07476154b88059d730e260eba282b3c"
+        "7a0b5e7feb620638d49070b71dcdcaf3",
         "application/vnd.docker.distribution.manifest.list.v2+json",
         False,
         json.dumps(fix_manifest_list),
@@ -310,8 +309,13 @@ def test_sign_containers_digests_ml(fix_manifest_list, fake_cosign_wrapper, fake
         (
             (),
             '{"config_file": "test", "digest": ['
+            '"sha256:2e8f38a0a8d2a450598430fa70c7f0b53aeec991e76c3e29c63add599b4ef7ee", '
+            '"sha256:b3f9218fb5839763e62e52ee6567fe331aa1f3c644f9b6f232ff23959257acf9", '
+            '"sha256:496fb0ff2057c79254c9dc6ba999608a98219c5c93142569a547277c679e532c", '
+            '"sha256:146ab6fa7ba3ab4d154b09c1c5522e4966ecd071bf23d1ba3df6c8b9fc33f8cb", '
+            '"sha256:bbef1f46572d1f33a92b53b0ba0ed5a1d09dab7ffe64be1ae3ae66e76275eabd", '
             '"sha256:d07476154b88059d730e260eba282b3c7a0b5e7feb620638d49070b71dcdcaf3"], '
-            '"reference": [null], '
+            '"reference": [null, null, null, null, null, null], '
             '"signing_key": "signing_key"}',
         )
     ] = {"signer_result": {"status": "ok"}}
@@ -354,11 +358,18 @@ def test_sign_containers_digests_ml(fix_manifest_list, fake_cosign_wrapper, fake
         image="namespace/image",
         tag=None,
         digests=TList[str](
-            ["sha256:d07476154b88059d730e260eba282b3c7a0b5e7feb620638d49070b71dcdcaf3"]
+            [
+                "sha256:2e8f38a0a8d2a450598430fa70c7f0b53aeec991e76c3e29c63add599b4ef7ee",
+                "sha256:b3f9218fb5839763e62e52ee6567fe331aa1f3c644f9b6f232ff23959257acf9",
+                "sha256:496fb0ff2057c79254c9dc6ba999608a98219c5c93142569a547277c679e532c",
+                "sha256:146ab6fa7ba3ab4d154b09c1c5522e4966ecd071bf23d1ba3df6c8b9fc33f8cb",
+                "sha256:bbef1f46572d1f33a92b53b0ba0ed5a1d09dab7ffe64be1ae3ae66e76275eabd",
+                "sha256:d07476154b88059d730e260eba282b3c7a0b5e7feb620638d49070b71dcdcaf3",
+            ]
         ),
-        arches=TList[str]([""]),
+        arches=TList[str](["amd64", "arm64", "arm", "ppc64le", "s390x", "multiarch"]),
     )
-    assert len(t.tractions["t_sign_entries_from_push_item"].o_sign_entries.data[0].data) == 1
+    assert len(t.tractions["t_sign_entries_from_push_item"].o_sign_entries.data[0].data) == 6
     assert t.tractions["t_sign_entries_from_push_item"].o_sign_entries.data[0].data == TList[
         Out[SignEntry]
     ](
@@ -367,9 +378,59 @@ def test_sign_containers_digests_ml(fix_manifest_list, fake_cosign_wrapper, fake
                 data=SignEntry(
                     reference=None,
                     repo="namespace/image",
+                    digest="sha256:2e8f38a0a8d2a450598430fa70c7f0b53aeec99"
+                    "1e76c3e29c63add599b4ef7ee",
+                    arch="amd64",
+                    signing_key="signing_key",
+                )
+            ),
+            Out[SignEntry](
+                data=SignEntry(
+                    reference=None,
+                    repo="namespace/image",
+                    digest="sha256:b3f9218fb5839763e62e52ee6567fe331aa1f3c644"
+                    "f9b6f232ff23959257acf9",
+                    arch="arm64",
+                    signing_key="signing_key",
+                )
+            ),
+            Out[SignEntry](
+                data=SignEntry(
+                    reference=None,
+                    repo="namespace/image",
+                    digest="sha256:496fb0ff2057c79254c9dc6ba999608a98219c5c93"
+                    "142569a547277c679e532c",
+                    arch="arm",
+                    signing_key="signing_key",
+                )
+            ),
+            Out[SignEntry](
+                data=SignEntry(
+                    reference=None,
+                    repo="namespace/image",
+                    digest="sha256:146ab6fa7ba3ab4d154b09c1c5522e4966ecd071bf"
+                    "23d1ba3df6c8b9fc33f8cb",
+                    arch="ppc64le",
+                    signing_key="signing_key",
+                )
+            ),
+            Out[SignEntry](
+                data=SignEntry(
+                    reference=None,
+                    repo="namespace/image",
+                    digest="sha256:bbef1f46572d1f33a92b53b0ba0ed5a1d09dab7ffe6"
+                    "4be1ae3ae66e76275eabd",
+                    arch="s390x",
+                    signing_key="signing_key",
+                )
+            ),
+            Out[SignEntry](
+                data=SignEntry(
+                    reference=None,
+                    repo="namespace/image",
                     digest="sha256:d07476154b88059d730e260eba282"
                     "b3c7a0b5e7feb620638d49070b71dcdcaf3",
-                    arch="",
+                    arch="multiarch",
                     signing_key="signing_key",
                 )
             ),
