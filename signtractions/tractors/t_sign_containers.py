@@ -25,13 +25,14 @@ class SignContainers(Tractor):
     i_task_id: In[int] = In[int](data=1)
     i_signing_keys: In[TList[In[str]]] = TIn[TList[In[str]]]()
     a_pool_size: Arg[int] = Arg[int](a=10)
+    a_executor_type: Arg[STMDExecutorType] = Arg[STMDExecutorType](a=STMDExecutorType.THREAD)
 
     t_parse_container_references: STMDParseContainerImageReference = (
         STMDParseContainerImageReference(
             uid="parse_container_references",
             i_container_image_reference=i_container_image_references,
             a_pool_size=a_pool_size,
-            a_executor_type=Arg[STMDExecutorType](a=STMDExecutorType.THREAD),
+            a_executor_type=a_executor_type,
         )
     )
     t_populate_digests: STMDPopulateContainerDigest = STMDPopulateContainerDigest(
@@ -47,7 +48,7 @@ class SignContainers(Tractor):
             i_container_parts=t_populate_digests.o_container_parts,
             i_signing_key=i_signing_keys,
             a_pool_size=a_pool_size,
-            a_executor_type=Arg[STMDExecutorType](a=STMDExecutorType.THREAD),
+            a_executor_type=a_executor_type,
         )
     )
     t_flatten_sign_entries: Flatten[SignEntry] = Flatten[SignEntry](

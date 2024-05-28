@@ -79,3 +79,24 @@ def fix_manifest_list():
             },
         ],
     }
+
+
+@pytest.fixture
+def fix_snapshot_str():
+    return """
+{
+    "application": "testApplication",
+    "components": [
+        {
+            "containerImage": "quay.io/containers/podman:latest",
+            "name": "podman",
+            "repository": "containers/podman"
+        },
+        {
+            "containerImage": "quay.io/containers/podman:1.0",
+            "name": "podman",
+            "repository": "containers/podman"
+        }
+    ]
+}
+"""
