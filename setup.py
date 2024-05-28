@@ -7,6 +7,7 @@ from setuptools import setup, find_packages
 from pytractions.pkgutils import traction_entry_points
 
 import signtractions.tractors.t_sign_containers
+import signtractions.tractors.t_sign_snapshot
 
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -52,9 +53,11 @@ setup(
         "pytractions @ git+https://github.com/midnightercz/pytractions.git",
         "gssapi"],
     entry_points={
-        "tractions": [
+        "tractions": list(set([
             x for x in traction_entry_points(signtractions.tractors.t_sign_containers)
-        ],
+        ]) & set([
+            x for x in traction_entry_points(signtractions.tractors.t_sign_snapshot)
+        ])),
     },
     dependency_links=[
     ],
