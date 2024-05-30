@@ -61,69 +61,6 @@ podman run -p 8501:8501 signtractions:latest web
 ---
 ---
 
-### Distribution: signtractions
-
-**Name**: pytractions.transformations:Flatten
-
-**Docs**: 
-
-**Inputs**:
-* **Name**: i_complex
-
-	**Type**: In[TList[In[TList[In[T]]]]]
-
-	**Docs**: 
-
-
-**Outputs**:
-* **Name**: o_flat
-
-	**Type**: Out[TList[Out[T]]]
-
-	**Docs**: 
-
-
-**Resources**:
-
-
-**Args**:
-
----
-**Name**: signtractions.tractions.signing:SignSignEntries
-
-**Docs**: Sign provided SignEntries with signer wrapper.
-
-**Inputs**:
-* **Name**: i_task_id
-
-	**Type**: In[int]
-
-	**Docs**: Task id used to identify signing requests.
-	
-
-* **Name**: i_sign_entries
-
-	**Type**: In[TList[In[SignEntry]]]
-
-	**Docs**: List of SignEntry objects to sign.
-
-
-**Outputs**:
-
-
-**Resources**:
-* **Name**: r_signer_wrapper
-
-	**Type**: Res[SignerWrapper]
-
-	**Docs**: 
-
-
-**Args**:
-
----
----
-
 ### Distribution: pytractions
 
 **Name**: pytractions.transformations:Extractor
@@ -201,6 +138,40 @@ podman run -p 8501:8501 signtractions:latest web
 	**Type**: Out[TList[Out[T]]]
 
 	**Docs**: 
+
+
+**Resources**:
+
+
+**Args**:
+
+---
+**Name**: pytractions.transformations:ListMultiplier
+
+**Docs**: Takes lengh of input list and creates output list of the same length filled
+with scalar value.
+
+**Inputs**:
+* **Name**: i_list
+
+	**Type**: In[TList[In[T]]]
+
+	**Docs**: Input list.
+	
+
+* **Name**: i_scalar
+
+	**Type**: In[X]
+
+	**Docs**: Scalar value.
+
+
+**Outputs**:
+* **Name**: o_list
+
+	**Type**: Out[TList[Out[X]]]
+
+	**Docs**: Output list.
 
 
 **Resources**:
