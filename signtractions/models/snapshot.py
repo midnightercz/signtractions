@@ -1,6 +1,23 @@
+from typing import Optional
+
 from dataclasses import field
 
 from pytractions.base import Base, TList
+
+
+class ComponentSourceGit(Base):
+    """Component source data structure."""
+
+    context: str = ""
+    dockerfileUrl: str = ""
+    revision: str = ""
+    url: str = ""
+
+
+class ComponentSource(Base):
+    """Component source data structure."""
+
+    git: Optional[ComponentSourceGit]
 
 
 class SnapshotComponent(Base):
@@ -9,6 +26,7 @@ class SnapshotComponent(Base):
     name: str = ""
     containerImage: str = ""
     repository: str = ""
+    source: Optional[ComponentSource] = None
 
 
 class Snapshot(Base):
