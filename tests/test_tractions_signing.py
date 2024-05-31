@@ -28,14 +28,14 @@ def test_sign_entries_from_container_parts():
         i_signing_key=In[str](data="signing_key"),
     )
     t.run()
-    assert t.o_sign_entries.data[0].data == SignEntry(
+    assert t.o_sign_entries.data[0] == SignEntry(
         repo="containers/podman",
         reference="quay.io/containers/podman:latest",
         digest="sha256:123456",
         arch="amd64",
         signing_key="signing_key",
     )
-    assert t.o_sign_entries.data[1].data == SignEntry(
+    assert t.o_sign_entries.data[1] == SignEntry(
         repo="containers/podman",
         reference="quay.io/containers/podman:latest",
         digest="sha256:123457",
@@ -60,17 +60,15 @@ def test_sign_sign_entries():
         uid="test",
         r_signer_wrapper=Res[FakeCosignSignerWrapper](r=fsw),
         i_task_id=In[int](data=1),
-        i_sign_entries=In[TList[In[SignEntry]]](
-            data=TList[In[SignEntry]](
+        i_sign_entries=In[TList[SignEntry]](
+            data=TList[SignEntry](
                 [
-                    In[SignEntry](
-                        data=SignEntry(
-                            repo="containers/podman",
-                            reference="quay.io/containers/podman:latest",
-                            digest="sha256:123456",
-                            arch="amd64",
-                            signing_key="signing_key",
-                        )
+                    SignEntry(
+                        repo="containers/podman",
+                        reference="quay.io/containers/podman:latest",
+                        digest="sha256:123456",
+                        arch="amd64",
+                        signing_key="signing_key",
                     )
                 ]
             )
@@ -95,17 +93,15 @@ def test_sign_sign_entries_fail():
         uid="test",
         r_signer_wrapper=Res[FakeCosignSignerWrapper](r=fsw),
         i_task_id=In[int](data=1),
-        i_sign_entries=In[TList[In[SignEntry]]](
-            data=TList[In[SignEntry]](
+        i_sign_entries=In[TList[SignEntry]](
+            data=TList[SignEntry](
                 [
-                    In[SignEntry](
-                        data=SignEntry(
-                            repo="containers/podman",
-                            reference="quay.io/containers/podman:latest",
-                            digest="sha256:123456",
-                            arch="amd64",
-                            signing_key="signing_key",
-                        )
+                    SignEntry(
+                        repo="containers/podman",
+                        reference="quay.io/containers/podman:latest",
+                        digest="sha256:123456",
+                        arch="amd64",
+                        signing_key="signing_key",
                     )
                 ]
             )

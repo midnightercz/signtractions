@@ -57,14 +57,14 @@ def test_sign_snapshot(fix_manifest_v2s2, fix_snapshot_str, fake_cosign_wrapper,
     )
     t.run()
     assert len(t.o_sign_entries.data) == 2
-    assert t.o_sign_entries.data[0].data == SignEntry(
+    assert t.o_sign_entries.data[0] == SignEntry(
         reference="quay.io/containers/podman:latest",
         repo="containers/podman",
         digest="sha256:6ef06d8c90c863ba4eb4297f1073ba8cb28c1f6570e2206cdaad2084e2a4715d",
         arch="",
         signing_key="signing_key",
     )
-    assert t.o_sign_entries.data[0].data == SignEntry(
+    assert t.o_sign_entries.data[0] == SignEntry(
         reference="quay.io/containers/podman:latest",
         repo="containers/podman",
         digest="sha256:6ef06d8c90c863ba4eb4297f1073ba8cb28c1f6570e2206cdaad2084e2a4715d",

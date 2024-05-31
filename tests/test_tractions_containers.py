@@ -1,7 +1,7 @@
 import json
 import pytest
 
-from pytractions.base import Arg, In, TList, STMDExecutorType, Out, Res
+from pytractions.base import Arg, In, TList, STMDExecutorType, Res
 
 from signtractions.resources.fake_quay_client import FakeQuayClient, ManifestNotFoundError
 
@@ -42,35 +42,31 @@ def test_parse_container_image_reference_digest():
 def test_parse_container_image_reference_stmd_tag():
     t = STMDParseContainerImageReference(
         uid="test",
-        i_container_image_reference=In[TList[In[str]]](
+        i_container_image_reference=In[TList[str]](
             data=[
-                In[str](data="quay.io/containers/podman:latest"),
-                In[str](data="quay.io/containers/podman:greatest"),
+                "quay.io/containers/podman:latest",
+                "quay.io/containers/podman:greatest",
             ]
         ),
         a_executor_type=Arg[STMDExecutorType](a=STMDExecutorType.LOCAL),
         a_pool_size=Arg[int](a=1),
     )
     t.run()
-    assert t.o_container_parts.data == TList[Out[ContainerParts]](
+    assert t.o_container_parts.data == TList[ContainerParts](
         [
-            Out[ContainerParts](
-                data=ContainerParts(
-                    registry="quay.io",
-                    image="containers/podman",
-                    tag="latest",
-                    digests=TList[str]([]),
-                    arches=TList[str]([]),
-                )
+            ContainerParts(
+                registry="quay.io",
+                image="containers/podman",
+                tag="latest",
+                digests=TList[str]([]),
+                arches=TList[str]([]),
             ),
-            Out[ContainerParts](
-                data=ContainerParts(
-                    registry="quay.io",
-                    image="containers/podman",
-                    tag="greatest",
-                    digests=TList[str]([]),
-                    arches=TList[str]([]),
-                )
+            ContainerParts(
+                registry="quay.io",
+                image="containers/podman",
+                tag="greatest",
+                digests=TList[str]([]),
+                arches=TList[str]([]),
             ),
         ]
     )

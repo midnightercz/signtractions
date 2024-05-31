@@ -28,7 +28,7 @@ class ContainerImagesFromSnapshot(Traction):
     """Extract container image references from snapshot."""
 
     i_snapshot: In[Snapshot]
-    o_container_images: Out[TList[Out[str]]]
+    o_container_images: Out[TList[str]]
 
     d_: str = """Extract container image references from snapshot."""
     d_i_snapshot: str = "Snapshot object"
@@ -36,4 +36,4 @@ class ContainerImagesFromSnapshot(Traction):
 
     def _run(self, on_update: OnUpdateCallable = None) -> None:
         for component in self.i_snapshot.data.components:
-            self.o_container_images.data.append(Out[str](data=component.containerImage))
+            self.o_container_images.data.append(component.containerImage)

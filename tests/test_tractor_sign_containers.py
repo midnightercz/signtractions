@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from pytractions.base import TList, Res, Arg, In, Out
+from pytractions.base import TList, Res, Arg, In
 
 from signtractions.tractors.t_sign_containers import SignContainers
 from signtractions.resources.signing_wrapper import SignerWrapperSettings
@@ -44,16 +44,12 @@ def test_sign_containers_tags(fix_manifest_v2s2, fake_cosign_wrapper, fake_quay_
         a_pool_size=Arg[int](a=1),
         r_dst_quay_client=Res[FakeQuayClient](r=fake_quay_client),
         i_task_id=In[int](data=1),
-        i_signing_keys=In[TList[In[str]]](data=TList[In[str]]([In[str](data="signing_key")])),
-        i_container_image_references=In[TList[In[str]]](
-            data=TList[In[str]]([In[str](data="quay.io/namespace/image:1")])
-        ),
+        i_signing_keys=In[TList[str]](data=TList[str](["signing_key"])),
+        i_container_image_references=In[TList[str]](data=TList[str](["quay.io/namespace/image:1"])),
     )
     t.run()
     assert len(t.tractions["t_parse_container_references"].o_container_parts.data) == 1
-    assert t.tractions["t_parse_container_references"].o_container_parts.data[
-        0
-    ].data == ContainerParts(
+    assert t.tractions["t_parse_container_references"].o_container_parts.data[0] == ContainerParts(
         registry="quay.io",
         image="namespace/image",
         tag="1",
@@ -61,7 +57,7 @@ def test_sign_containers_tags(fix_manifest_v2s2, fake_cosign_wrapper, fake_quay_
         arches=TList[str](),
     )
     assert len(t.tractions["t_populate_digests"].o_container_parts.data) == 1
-    assert t.tractions["t_populate_digests"].o_container_parts.data[0].data == ContainerParts(
+    assert t.tractions["t_populate_digests"].o_container_parts.data[0] == ContainerParts(
         registry="quay.io",
         image="namespace/image",
         tag="1",
@@ -70,16 +66,14 @@ def test_sign_containers_tags(fix_manifest_v2s2, fake_cosign_wrapper, fake_quay_
         ),
         arches=TList[str]([""]),
     )
-    assert t.tractions["t_sign_entries_from_push_item"].o_sign_entries.data[0].data[
-        0
-    ].data == SignEntry(
+    assert t.tractions["t_sign_entries_from_push_item"].o_sign_entries.data[0][0] == SignEntry(
         reference="quay.io/namespace/image:1",
         repo="namespace/image",
         digest="sha256:6ef06d8c90c863ba4eb4297f1073ba8cb28c1f6570e2206cdaad2084e2a4715d",
         arch="",
         signing_key="signing_key",
     )
-    assert t.o_sign_entries.data[0].data == SignEntry(
+    assert t.o_sign_entries.data[0] == SignEntry(
         reference="quay.io/namespace/image:1",
         repo="namespace/image",
         digest="sha256:6ef06d8c90c863ba4eb4297f1073ba8cb28c1f6570e2206cdaad2084e2a4715d",
@@ -118,16 +112,12 @@ def test_sign_containers_tags_ml(fix_manifest_list, fake_cosign_wrapper, fake_qu
         r_dst_quay_client=Res[FakeQuayClient](r=fake_quay_client),
         i_task_id=In[int](data=1),
         a_pool_size=Arg[int](a=1),
-        i_signing_keys=In[TList[In[str]]](data=TList[In[str]]([In[str](data="signing_key")])),
-        i_container_image_references=In[TList[In[str]]](
-            data=TList[In[str]]([In[str](data="quay.io/namespace/image:1")])
-        ),
+        i_signing_keys=In[TList[str]](data=TList[str](["signing_key"])),
+        i_container_image_references=In[TList[str]](data=TList[str](["quay.io/namespace/image:1"])),
     )
     t.run()
     assert len(t.tractions["t_parse_container_references"].o_container_parts.data) == 1
-    assert t.tractions["t_parse_container_references"].o_container_parts.data[
-        0
-    ].data == ContainerParts(
+    assert t.tractions["t_parse_container_references"].o_container_parts.data[0] == ContainerParts(
         registry="quay.io",
         image="namespace/image",
         tag="1",
@@ -135,7 +125,7 @@ def test_sign_containers_tags_ml(fix_manifest_list, fake_cosign_wrapper, fake_qu
         arches=TList[str](),
     )
     assert len(t.tractions["t_populate_digests"].o_container_parts.data) == 1
-    assert t.tractions["t_populate_digests"].o_container_parts.data[0].data == ContainerParts(
+    assert t.tractions["t_populate_digests"].o_container_parts.data[0] == ContainerParts(
         registry="quay.io",
         image="namespace/image",
         tag="1",
@@ -151,70 +141,50 @@ def test_sign_containers_tags_ml(fix_manifest_list, fake_cosign_wrapper, fake_qu
         ),
         arches=TList[str](["amd64", "arm64", "arm", "ppc64le", "s390x", "multiarch"]),
     )
-    assert len(t.tractions["t_sign_entries_from_push_item"].o_sign_entries.data[0].data) == 6
-    assert t.tractions["t_sign_entries_from_push_item"].o_sign_entries.data[0].data == TList[
-        Out[SignEntry]
-    ](
+    assert len(t.tractions["t_sign_entries_from_push_item"].o_sign_entries.data[0]) == 6
+    assert t.tractions["t_sign_entries_from_push_item"].o_sign_entries.data[0] == TList[SignEntry](
         [
-            Out[SignEntry](
-                data=SignEntry(
-                    reference="quay.io/namespace/image:1",
-                    repo="namespace/image",
-                    digest="sha256:2e8f38a0a8d2a450598430fa70c7f0b53a"
-                    "eec991e76c3e29c63add599b4ef7ee",
-                    arch="amd64",
-                    signing_key="signing_key",
-                )
+            SignEntry(
+                reference="quay.io/namespace/image:1",
+                repo="namespace/image",
+                digest="sha256:2e8f38a0a8d2a450598430fa70c7f0b53a" "eec991e76c3e29c63add599b4ef7ee",
+                arch="amd64",
+                signing_key="signing_key",
             ),
-            Out[SignEntry](
-                data=SignEntry(
-                    reference="quay.io/namespace/image:1",
-                    repo="namespace/image",
-                    digest="sha256:b3f9218fb5839763e62e52ee6567fe331a"
-                    "a1f3c644f9b6f232ff23959257acf9",
-                    arch="arm64",
-                    signing_key="signing_key",
-                )
+            SignEntry(
+                reference="quay.io/namespace/image:1",
+                repo="namespace/image",
+                digest="sha256:b3f9218fb5839763e62e52ee6567fe331a" "a1f3c644f9b6f232ff23959257acf9",
+                arch="arm64",
+                signing_key="signing_key",
             ),
-            Out[SignEntry](
-                data=SignEntry(
-                    reference="quay.io/namespace/image:1",
-                    repo="namespace/image",
-                    digest="sha256:496fb0ff2057c79254c9dc6ba999608a982"
-                    "19c5c93142569a547277c679e532c",
-                    arch="arm",
-                    signing_key="signing_key",
-                )
+            SignEntry(
+                reference="quay.io/namespace/image:1",
+                repo="namespace/image",
+                digest="sha256:496fb0ff2057c79254c9dc6ba999608a982" "19c5c93142569a547277c679e532c",
+                arch="arm",
+                signing_key="signing_key",
             ),
-            Out[SignEntry](
-                data=SignEntry(
-                    reference="quay.io/namespace/image:1",
-                    repo="namespace/image",
-                    digest="sha256:146ab6fa7ba3ab4d154b09c1c5522e4966e"
-                    "cd071bf23d1ba3df6c8b9fc33f8cb",
-                    arch="ppc64le",
-                    signing_key="signing_key",
-                )
+            SignEntry(
+                reference="quay.io/namespace/image:1",
+                repo="namespace/image",
+                digest="sha256:146ab6fa7ba3ab4d154b09c1c5522e4966e" "cd071bf23d1ba3df6c8b9fc33f8cb",
+                arch="ppc64le",
+                signing_key="signing_key",
             ),
-            Out[SignEntry](
-                data=SignEntry(
-                    reference="quay.io/namespace/image:1",
-                    repo="namespace/image",
-                    digest="sha256:bbef1f46572d1f33a92b53b0ba0ed5a1d09d"
-                    "ab7ffe64be1ae3ae66e76275eabd",
-                    arch="s390x",
-                    signing_key="signing_key",
-                )
+            SignEntry(
+                reference="quay.io/namespace/image:1",
+                repo="namespace/image",
+                digest="sha256:bbef1f46572d1f33a92b53b0ba0ed5a1d09d" "ab7ffe64be1ae3ae66e76275eabd",
+                arch="s390x",
+                signing_key="signing_key",
             ),
-            Out[SignEntry](
-                data=SignEntry(
-                    reference="quay.io/namespace/image:1",
-                    repo="namespace/image",
-                    digest="sha256:d07476154b88059d730e260eba282b3c7a0b"
-                    "5e7feb620638d49070b71dcdcaf3",
-                    arch="multiarch",
-                    signing_key="signing_key",
-                )
+            SignEntry(
+                reference="quay.io/namespace/image:1",
+                repo="namespace/image",
+                digest="sha256:d07476154b88059d730e260eba282b3c7a0b" "5e7feb620638d49070b71dcdcaf3",
+                arch="multiarch",
+                signing_key="signing_key",
             ),
         ]
     )
@@ -243,24 +213,19 @@ def test_sign_containers_digests(fix_manifest_v2s2, fake_cosign_wrapper, fake_qu
         a_pool_size=Arg[int](a=1),
         r_dst_quay_client=Res[FakeQuayClient](r=fake_quay_client),
         i_task_id=In[int](data=1),
-        i_signing_keys=In[TList[In[str]]](data=TList[In[str]]([In[str](data="signing_key")])),
-        i_container_image_references=In[TList[In[str]]](
-            data=TList[In[str]](
+        i_signing_keys=In[TList[str]](data=TList[str](["signing_key"])),
+        i_container_image_references=In[TList[str]](
+            data=TList[str](
                 [
-                    In[str](
-                        data="quay.io/namespace/"
-                        "image@sha256:6ef06d8c90c863ba4eb4297f1073ba8c"
-                        "b28c1f6570e2206cdaad2084e2a4715d"
-                    )
+                    "quay.io/namespace/image@sha256:6ef06d8c90c863ba4eb4297f1073ba8c"
+                    "b28c1f6570e2206cdaad2084e2a4715d"
                 ]
             )
         ),
     )
     t.run()
     assert len(t.tractions["t_parse_container_references"].o_container_parts.data) == 1
-    assert t.tractions["t_parse_container_references"].o_container_parts.data[
-        0
-    ].data == ContainerParts(
+    assert t.tractions["t_parse_container_references"].o_container_parts.data[0] == ContainerParts(
         registry="quay.io",
         image="namespace/image",
         tag=None,
@@ -270,7 +235,7 @@ def test_sign_containers_digests(fix_manifest_v2s2, fake_cosign_wrapper, fake_qu
         arches=TList[str]([""]),
     )
     assert len(t.tractions["t_populate_digests"].o_container_parts.data) == 1
-    assert t.tractions["t_populate_digests"].o_container_parts.data[0].data == ContainerParts(
+    assert t.tractions["t_populate_digests"].o_container_parts.data[0] == ContainerParts(
         registry="quay.io",
         image="namespace/image",
         tag=None,
@@ -279,16 +244,14 @@ def test_sign_containers_digests(fix_manifest_v2s2, fake_cosign_wrapper, fake_qu
         ),
         arches=TList[str]([""]),
     )
-    assert t.tractions["t_sign_entries_from_push_item"].o_sign_entries.data[0].data[
-        0
-    ].data == SignEntry(
+    assert t.tractions["t_sign_entries_from_push_item"].o_sign_entries.data[0][0] == SignEntry(
         reference=None,
         repo="namespace/image",
         digest="sha256:6ef06d8c90c863ba4eb4297f1073ba8cb28c1f6570e2206cdaad2084e2a4715d",
         arch="",
         signing_key="signing_key",
     )
-    assert t.o_sign_entries.data[0].data == SignEntry(
+    assert t.o_sign_entries.data[0] == SignEntry(
         reference=None,
         repo="namespace/image",
         digest="sha256:6ef06d8c90c863ba4eb4297f1073ba8cb28c1f6570e2206cdaad2084e2a4715d",
@@ -326,24 +289,19 @@ def test_sign_containers_digests_ml(fix_manifest_list, fake_cosign_wrapper, fake
         r_dst_quay_client=Res[FakeQuayClient](r=fake_quay_client),
         i_task_id=In[int](data=1),
         a_pool_size=Arg[int](a=1),
-        i_signing_keys=In[TList[In[str]]](data=TList[In[str]]([In[str](data="signing_key")])),
-        i_container_image_references=In[TList[In[str]]](
-            data=TList[In[str]](
+        i_signing_keys=In[TList[str]](data=TList[str](["signing_key"])),
+        i_container_image_references=In[TList[str]](
+            data=TList[str](
                 [
-                    In[str](
-                        data="quay.io/namespace/"
-                        "image@sha256:d07476154b88059d730e260eba"
-                        "282b3c7a0b5e7feb620638d49070b71dcdcaf3"
-                    )
+                    "quay.io/namespace/image@sha256:d07476154b88059d730e260eba"
+                    "282b3c7a0b5e7feb620638d49070b71dcdcaf3"
                 ]
             )
         ),
     )
     t.run()
     assert len(t.tractions["t_parse_container_references"].o_container_parts.data) == 1
-    assert t.tractions["t_parse_container_references"].o_container_parts.data[
-        0
-    ].data == ContainerParts(
+    assert t.tractions["t_parse_container_references"].o_container_parts.data[0] == ContainerParts(
         registry="quay.io",
         image="namespace/image",
         tag=None,
@@ -353,7 +311,7 @@ def test_sign_containers_digests_ml(fix_manifest_list, fake_cosign_wrapper, fake
         arches=TList[str]([""]),
     )
     assert len(t.tractions["t_populate_digests"].o_container_parts.data) == 1
-    assert t.tractions["t_populate_digests"].o_container_parts.data[0].data == ContainerParts(
+    assert t.tractions["t_populate_digests"].o_container_parts.data[0] == ContainerParts(
         registry="quay.io",
         image="namespace/image",
         tag=None,
@@ -369,70 +327,50 @@ def test_sign_containers_digests_ml(fix_manifest_list, fake_cosign_wrapper, fake
         ),
         arches=TList[str](["amd64", "arm64", "arm", "ppc64le", "s390x", "multiarch"]),
     )
-    assert len(t.tractions["t_sign_entries_from_push_item"].o_sign_entries.data[0].data) == 6
-    assert t.tractions["t_sign_entries_from_push_item"].o_sign_entries.data[0].data == TList[
-        Out[SignEntry]
-    ](
+    assert len(t.tractions["t_sign_entries_from_push_item"].o_sign_entries.data[0]) == 6
+    assert t.tractions["t_sign_entries_from_push_item"].o_sign_entries.data[0] == TList[SignEntry](
         [
-            Out[SignEntry](
-                data=SignEntry(
-                    reference=None,
-                    repo="namespace/image",
-                    digest="sha256:2e8f38a0a8d2a450598430fa70c7f0b53aeec99"
-                    "1e76c3e29c63add599b4ef7ee",
-                    arch="amd64",
-                    signing_key="signing_key",
-                )
+            SignEntry(
+                reference=None,
+                repo="namespace/image",
+                digest="sha256:2e8f38a0a8d2a450598430fa70c7f0b53aeec99" "1e76c3e29c63add599b4ef7ee",
+                arch="amd64",
+                signing_key="signing_key",
             ),
-            Out[SignEntry](
-                data=SignEntry(
-                    reference=None,
-                    repo="namespace/image",
-                    digest="sha256:b3f9218fb5839763e62e52ee6567fe331aa1f3c644"
-                    "f9b6f232ff23959257acf9",
-                    arch="arm64",
-                    signing_key="signing_key",
-                )
+            SignEntry(
+                reference=None,
+                repo="namespace/image",
+                digest="sha256:b3f9218fb5839763e62e52ee6567fe331aa1f3c644" "f9b6f232ff23959257acf9",
+                arch="arm64",
+                signing_key="signing_key",
             ),
-            Out[SignEntry](
-                data=SignEntry(
-                    reference=None,
-                    repo="namespace/image",
-                    digest="sha256:496fb0ff2057c79254c9dc6ba999608a98219c5c93"
-                    "142569a547277c679e532c",
-                    arch="arm",
-                    signing_key="signing_key",
-                )
+            SignEntry(
+                reference=None,
+                repo="namespace/image",
+                digest="sha256:496fb0ff2057c79254c9dc6ba999608a98219c5c93" "142569a547277c679e532c",
+                arch="arm",
+                signing_key="signing_key",
             ),
-            Out[SignEntry](
-                data=SignEntry(
-                    reference=None,
-                    repo="namespace/image",
-                    digest="sha256:146ab6fa7ba3ab4d154b09c1c5522e4966ecd071bf"
-                    "23d1ba3df6c8b9fc33f8cb",
-                    arch="ppc64le",
-                    signing_key="signing_key",
-                )
+            SignEntry(
+                reference=None,
+                repo="namespace/image",
+                digest="sha256:146ab6fa7ba3ab4d154b09c1c5522e4966ecd071bf" "23d1ba3df6c8b9fc33f8cb",
+                arch="ppc64le",
+                signing_key="signing_key",
             ),
-            Out[SignEntry](
-                data=SignEntry(
-                    reference=None,
-                    repo="namespace/image",
-                    digest="sha256:bbef1f46572d1f33a92b53b0ba0ed5a1d09dab7ffe6"
-                    "4be1ae3ae66e76275eabd",
-                    arch="s390x",
-                    signing_key="signing_key",
-                )
+            SignEntry(
+                reference=None,
+                repo="namespace/image",
+                digest="sha256:bbef1f46572d1f33a92b53b0ba0ed5a1d09dab7ffe6" "4be1ae3ae66e76275eabd",
+                arch="s390x",
+                signing_key="signing_key",
             ),
-            Out[SignEntry](
-                data=SignEntry(
-                    reference=None,
-                    repo="namespace/image",
-                    digest="sha256:d07476154b88059d730e260eba282"
-                    "b3c7a0b5e7feb620638d49070b71dcdcaf3",
-                    arch="multiarch",
-                    signing_key="signing_key",
-                )
+            SignEntry(
+                reference=None,
+                repo="namespace/image",
+                digest="sha256:d07476154b88059d730e260eba282" "b3c7a0b5e7feb620638d49070b71dcdcaf3",
+                arch="multiarch",
+                signing_key="signing_key",
             ),
         ]
     )

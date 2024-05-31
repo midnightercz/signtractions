@@ -20,7 +20,7 @@ class SignSignEntries(Traction):
 
     r_signer_wrapper: Res[SignerWrapper]
     i_task_id: In[int]
-    i_sign_entries: In[TList[In[SignEntry]]]
+    i_sign_entries: In[TList[SignEntry]]
 
     d_: str = "Sign provided SignEntries with signer wrapper."
     d_i_sign_entries: str = "List of SignEntry objects to sign."
@@ -28,7 +28,7 @@ class SignSignEntries(Traction):
 
     def _run(self, on_update: OnUpdateCallable = None) -> None:
         self.r_signer_wrapper.r.sign_containers(
-            [x.data for x in self.i_sign_entries.data],
+            [x for x in self.i_sign_entries.data],
             task_id=self.i_task_id.data,
         )
 
@@ -42,7 +42,7 @@ class STMDSignSignEntries(STMD):
     _traction: Type[Traction] = SignSignEntries
     r_signer_wrapper: Res[SignerWrapper]
     i_task_id: STMDSingleIn[int]
-    i_sign_entries: In[TList[In[TList[In[SignEntry]]]]]
+    i_sign_entries: In[TList[TList[SignEntry]]]
 
     d_: str = "Sign provided SignEntries with signer wrapper. STMD version."
     d_i_sign_entries: str = "List of List of SignEntry objects to sign."
@@ -54,7 +54,7 @@ class SignEntriesFromContainerParts(Traction):
 
     i_container_parts: In[ContainerParts]
     i_signing_key: In[str]
-    o_sign_entries: Out[TList[Out[SignEntry]]]
+    o_sign_entries: Out[TList[SignEntry]]
 
     d_: str = """Create sign entries from container parts.
     For each pair of digest and arch in container parts, create a SignEntry object.
@@ -68,18 +68,16 @@ class SignEntriesFromContainerParts(Traction):
             self.i_container_parts.data.digests, self.i_container_parts.data.arches
         ):
             self.o_sign_entries.data.append(
-                Out[SignEntry](
-                    data=SignEntry(
-                        digest=digest,
-                        arch=arch,
-                        reference=(
-                            self.i_container_parts.data.make_reference()
-                            if self.i_container_parts.data.tag
-                            else None
-                        ),
-                        repo=self.i_container_parts.data.image,
-                        signing_key=self.i_signing_key.data,
-                    )
+                SignEntry(
+                    digest=digest,
+                    arch=arch,
+                    reference=(
+                        self.i_container_parts.data.make_reference()
+                        if self.i_container_parts.data.tag
+                        else None
+                    ),
+                    repo=self.i_container_parts.data.image,
+                    signing_key=self.i_signing_key.data,
                 )
             )
 
@@ -91,9 +89,9 @@ class STMDSignEntriesFromContainerParts(STMD):
     """
 
     _traction: Type[Traction] = SignEntriesFromContainerParts
-    i_signing_key: In[TList[In[str]]]
-    i_container_parts: In[TList[In[ContainerParts]]]
-    o_sign_entries: Out[TList[Out[TList[Out[SignEntry]]]]]
+    i_signing_key: In[TList[str]]
+    i_container_parts: In[TList[ContainerParts]]
+    o_sign_entries: Out[TList[TList[SignEntry]]]
 
     d_: str = """Create sign entries from container parts.
     For each pair of digest and arch in container parts, create a SignEntry object.

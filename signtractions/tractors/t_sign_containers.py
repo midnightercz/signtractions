@@ -21,9 +21,9 @@ class SignContainers(Tractor):
         Union[MsgSignerWrapper, CosignSignerWrapper]
     ]()
     r_dst_quay_client: Res[QuayClient] = TRes[QuayClient]()
-    i_container_image_references: In[TList[In[str]]] = TIn[TList[In[str]]]()
+    i_container_image_references: In[TList[str]] = TIn[TList[str]]()
     i_task_id: In[int] = In[int](data=1)
-    i_signing_keys: In[TList[In[str]]] = TIn[TList[In[str]]]()
+    i_signing_keys: In[TList[str]] = TIn[TList[str]]()
     a_pool_size: Arg[int] = Arg[int](a=10)
     a_executor_type: Arg[STMDExecutorType] = Arg[STMDExecutorType](a=STMDExecutorType.THREAD)
 
@@ -61,7 +61,7 @@ class SignContainers(Tractor):
         i_task_id=i_task_id,
         r_signer_wrapper=r_signer_wrapper_cosign,
     )
-    o_sign_entries: Out[TList[Out[SignEntry]]] = t_flatten_sign_entries.o_flat
+    o_sign_entries: Out[TList[SignEntry]] = t_flatten_sign_entries.o_flat
 
     d_: str = """
     Sign container images provided as input in cosign wrapper with signing keys provided as input.

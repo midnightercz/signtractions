@@ -40,8 +40,8 @@ class STMDParseContainerImageReference(STMD):
     """Parser container image references into list of parts."""
 
     _traction: Type[Traction] = ParseCotainerImageReference
-    i_container_image_reference: In[TList[In[str]]]
-    o_container_parts: Out[TList[Out[ContainerParts]]]
+    i_container_image_reference: In[TList[str]]
+    o_container_parts: Out[TList[ContainerParts]]
 
     d_: str = """Parser container image reference into ContainerParts model. STMD version."""
     d_i_container_image_reference: str = "List of container image references to parse"
@@ -117,8 +117,8 @@ class STMDPopulateContainerDigest(STMD):
     """Fetch digest(s) for ContainerParts if there isn't any. STMD version."""
 
     _traction: Type[Traction] = PopulateContainerDigest
-    i_container_parts: In[TList[In[ContainerParts]]]
-    o_container_parts: Out[TList[Out[ContainerParts]]]
+    i_container_parts: In[TList[ContainerParts]]
+    o_container_parts: Out[TList[ContainerParts]]
     r_quay_client: Res[QuayClient]
 
     d_: str = """Fetch digest(s) for ContainerParts if there aren't any

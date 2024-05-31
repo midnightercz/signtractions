@@ -50,7 +50,7 @@ class SignSnapshot(Tractor):
         a_executor_type=a_executor_type,
     )
 
-    o_sign_entries: Out[TList[Out[SignEntry]]] = t_sign_containers.o_sign_entries
+    o_sign_entries: Out[TList[SignEntry]] = t_sign_containers.o_sign_entries
 
     d_: str = """
     Sign containers in release snapshot.
