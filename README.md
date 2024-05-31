@@ -101,7 +101,7 @@ podman run -p 8501:8501 signtractions:latest web
 **Inputs**:
 * **Name**: i_list
 
-	**Type**: In[TList[In[T]]]
+	**Type**: In[TList[T]]
 
 	**Docs**: 
 
@@ -109,7 +109,7 @@ podman run -p 8501:8501 signtractions:latest web
 **Outputs**:
 * **Name**: o_list
 
-	**Type**: Out[TList[Out[T]]]
+	**Type**: Out[TList[T]]
 
 	**Docs**: 
 
@@ -127,7 +127,7 @@ podman run -p 8501:8501 signtractions:latest web
 **Inputs**:
 * **Name**: i_complex
 
-	**Type**: In[TList[In[TList[In[T]]]]]
+	**Type**: In[TList[TList[T]]]
 
 	**Docs**: 
 
@@ -135,7 +135,7 @@ podman run -p 8501:8501 signtractions:latest web
 **Outputs**:
 * **Name**: o_flat
 
-	**Type**: Out[TList[Out[T]]]
+	**Type**: Out[TList[T]]
 
 	**Docs**: 
 
@@ -154,7 +154,7 @@ with scalar value.
 **Inputs**:
 * **Name**: i_list
 
-	**Type**: In[TList[In[T]]]
+	**Type**: In[TList[T]]
 
 	**Docs**: Input list.
 	
@@ -169,7 +169,7 @@ with scalar value.
 **Outputs**:
 * **Name**: o_list
 
-	**Type**: Out[TList[Out[X]]]
+	**Type**: Out[TList[X]]
 
 	**Docs**: Output list.
 
@@ -196,7 +196,7 @@ with scalar value.
 **Inputs**:
 * **Name**: i_container_image_references
 
-	**Type**: In[TList[In[str]]]
+	**Type**: In[TList[str]]
 
 	**Docs**: List of container image references to sign.
 	
@@ -210,7 +210,7 @@ with scalar value.
 
 * **Name**: i_signing_keys
 
-	**Type**: In[TList[In[str]]]
+	**Type**: In[TList[str]]
 
 	**Docs**: List of signing keys used to sign containers. One key per container.
 
@@ -218,7 +218,7 @@ with scalar value.
 **Outputs**:
 * **Name**: o_sign_entries
 
-	**Type**: Out[TList[Out[SignEntry]]]
+	**Type**: Out[TList[SignEntry]]
 
 	**Docs**: 
 
