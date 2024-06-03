@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/pytractions
+      url: https://pypi.org/p/signtractions
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
     steps:
@@ -45,6 +45,8 @@ jobs:
         path: dist/
     - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_TOKEN }}
   container-release:
     uses: ./.github/workflows/build.yml
     secrets: inherit
