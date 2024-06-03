@@ -50,7 +50,7 @@ setup(
         "koji",
         "requests",
         "requests_kerberos",
-        "pytractions @ git+https://github.com/midnightercz/pytractions.git",
+        "pytractions",
         "gssapi"],
     entry_points={
         "tractions": list(set([
