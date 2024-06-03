@@ -1,5 +1,7 @@
 import pytest
 
+import tempfile
+
 
 @pytest.fixture
 def fix_manifest_v2s2():
@@ -100,3 +102,29 @@ def fix_snapshot_str():
     ]
 }
 """
+
+
+@pytest.fixture
+def fix_snapshot_file():
+    with tempfile.NamedTemporaryFile(mode="w") as f:
+        f.write(
+            """
+{
+    "application": "testApplication",
+    "components": [
+        {
+            "containerImage": "quay.io/containers/podman:latest",
+            "name": "podman",
+            "repository": "containers/podman"
+        },
+        {
+            "containerImage": "quay.io/containers/podman:1.0",
+            "name": "podman",
+            "repository": "containers/podman"
+        }
+    ]
+}
+"""
+        )
+        f.flush()
+        yield f.name

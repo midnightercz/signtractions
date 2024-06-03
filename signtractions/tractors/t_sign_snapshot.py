@@ -22,6 +22,7 @@ class SignSnapshot(Tractor):
     ]()
     r_dst_quay_client: Res[QuayClient] = TRes[QuayClient]()
     i_snapshot_str: In[str] = TIn[str]()
+    i_snapshot_file: In[str] = TIn[str]()
     i_signing_key: In[str] = TIn[str]()
     i_task_id: In[int] = TIn[int]()
     a_pool_size: Arg[int] = Arg[int](a=10)
@@ -30,6 +31,7 @@ class SignSnapshot(Tractor):
     t_parse_snapshot: ParseSnapshot = ParseSnapshot(
         uid="parse_snapshot",
         i_snapshot_str=i_snapshot_str,
+        i_snapshot_file=i_snapshot_file,
     )
     t_container_images_from_snapshot: ContainerImagesFromSnapshot = ContainerImagesFromSnapshot(
         uid="container_images_from_snapshot", i_snapshot=t_parse_snapshot.o_snapshot
@@ -57,5 +59,6 @@ class SignSnapshot(Tractor):
 """
     d_i_task_id: str = "Task ID to identify signing request."
     d_i_snapshot_str: str = "Json representation of release snapshot."
+    d_i_snapshot_file: str = "Path to a file containing snapshot in json format."
     d_a_pool_size: str = "Pool size used for STMD tractions"
     d_i_signing_key: str = "Signing key used to sign containers. One key per container."

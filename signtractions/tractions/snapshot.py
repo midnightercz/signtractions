@@ -14,6 +14,7 @@ class ParseSnapshot(Traction):
     """Sign SignEntries."""
 
     i_snapshot_str: In[str]
+    i_snapshot_file: In[str]
     o_snapshot: Out[Snapshot]
 
     d_: str = "Parse snapshot json string into Snapshot object."
@@ -21,7 +22,12 @@ class ParseSnapshot(Traction):
     d_o_snapshot: str = "Parsed Snapshot object"
 
     def _run(self, on_update: OnUpdateCallable = None) -> None:
-        self.o_snapshot.data = Snapshot.content_from_json(json.loads(self.i_snapshot_str.data))
+        if self.i_snapshot_str.data:
+            self.o_snapshot.data = Snapshot.content_from_json(json.loads(self.i_snapshot_str.data))
+        else:
+            self.o_snapshot.data = Snapshot.content_from_json(
+                json.load(open(self.i_snapshot_file.data))
+            )
 
 
 class ContainerImagesFromSnapshot(Traction):
