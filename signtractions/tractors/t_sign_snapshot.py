@@ -7,7 +7,10 @@ from pytractions.tractor import Tractor
 from ..tractions.snapshot import ParseSnapshot, ContainerImagesFromSnapshot
 
 from ..resources.quay_client import QuayClient
+from ..resources.fake_quay_client import FakeQuayClient
+
 from ..resources.signing_wrapper import MsgSignerWrapper, CosignSignerWrapper
+from ..resources.fake_signing_wrapper import FakeCosignSignerWrapper
 
 from ..models.signing import SignEntry
 
@@ -17,10 +20,10 @@ from .t_sign_containers import SignContainers
 class SignSnapshot(Tractor):
     """Sign release snapshot."""
 
-    r_signer_wrapper_cosign: Res[Union[MsgSignerWrapper, CosignSignerWrapper]] = TRes[
-        Union[MsgSignerWrapper, CosignSignerWrapper]
-    ]()
-    r_dst_quay_client: Res[QuayClient] = TRes[QuayClient]()
+    r_signer_wrapper_cosign: Res[
+        Union[FakeCosignSignerWrapper, MsgSignerWrapper, CosignSignerWrapper]
+    ] = TRes[Union[FakeCosignSignerWrapper, MsgSignerWrapper, CosignSignerWrapper]]()
+    r_dst_quay_client: Res[Union[QuayClient, FakeQuayClient]] = TRes[Union[QuayClient,FakeQuayClient]]()
     i_snapshot_str: In[str] = TIn[str]()
     i_snapshot_file: In[str] = TIn[str]()
     i_signing_key: In[str] = TIn[str]()

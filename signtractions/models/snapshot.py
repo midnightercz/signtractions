@@ -2,7 +2,7 @@ from typing import Optional
 
 from dataclasses import field
 
-from pytractions.base import Base, TList
+from pytractions.base import Base, TList, TDict
 
 
 class ComponentSourceGit(Base):
@@ -34,3 +34,4 @@ class Snapshot(Base):
 
     application: str = ""
     components: TList[SnapshotComponent] = field(default_factory=TList[SnapshotComponent])
+    artifacts: TDict[str, str] = field(default_factory=TDict[str, str])

@@ -1,6 +1,8 @@
 import json
 import pytest
 
+from pytractions.base import TDict
+
 from signtractions.resources import fake_quay_client
 from signtractions.resources import exceptions
 
@@ -18,7 +20,12 @@ def test_get_manifest_list_success():
             }
         ],
     }
-    client = fake_quay_client.FakeQuayClient(username="user", password="pass", host="quay.io")
+    client = fake_quay_client.FakeQuayClient(
+        username="user",
+        password="pass",
+        host="quay.io",
+        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+    )
     client.populate_manifest(
         "quay.io/namespace/image:1",
         "application/vnd.docker.distribution.manifest.list.v2+json",
@@ -45,7 +52,12 @@ def test_get_manifest_list_raw_success():
             }
         ],
     }
-    client = fake_quay_client.FakeQuayClient(username="user", password="pass", host="quay.io")
+    client = fake_quay_client.FakeQuayClient(
+        username="user",
+        password="pass",
+        host="quay.io",
+        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+    )
     client.populate_manifest(
         "quay.io/namespace/image:1",
         "application/vnd.docker.distribution.manifest.list.v2+json",
@@ -73,7 +85,12 @@ def test_get_manifest_list_raw_return_headers_success():
             }
         ],
     }
-    client = fake_quay_client.FakeQuayClient(username="user", password="pass", host="quay.io")
+    client = fake_quay_client.FakeQuayClient(
+        username="user",
+        password="pass",
+        host="quay.io",
+        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+    )
     client.populate_manifest(
         "quay.io/namespace/image:1",
         "application/vnd.docker.distribution.manifest.list.v2+json",
@@ -97,7 +114,12 @@ def test_get_manifest_list_wrong_type():
         "digest": "sha256:6d5f4d65fg4d6f54g",
         "platform": {"architecture": "arm64", "os": "linux"},
     }
-    client = fake_quay_client.FakeQuayClient(username="user", password="pass", host="quay.io")
+    client = fake_quay_client.FakeQuayClient(
+        username="user",
+        password="pass",
+        host="quay.io",
+        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+    )
     client.populate_manifest(
         "quay.io/namespace/image:1",
         "application/vnd.docker.distribution.manifest.v2+json",
@@ -113,7 +135,12 @@ def test_get_manifest_list_wrong_type():
 
 
 def test_get_manifest_list_not_found():
-    client = fake_quay_client.FakeQuayClient(username="user", password="pass", host="quay.io")
+    client = fake_quay_client.FakeQuayClient(
+        username="user",
+        password="pass",
+        host="quay.io",
+        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+    )
     with pytest.raises(exceptions.ManifestNotFoundError):
         client.get_manifest(
             "quay.io/namespace/image:1",
@@ -132,7 +159,12 @@ def test_get_manifest_accept_any():
         "signatures": [],
     }
 
-    client = fake_quay_client.FakeQuayClient(username="user", password="pass", host="quay.io")
+    client = fake_quay_client.FakeQuayClient(
+        username="user",
+        password="pass",
+        host="quay.io",
+        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+    )
     client.populate_manifest(
         "quay.io/namespace/image:1",
         "application/vnd.docker.distribution.manifest.v1+json",
@@ -154,7 +186,12 @@ def test_get_manifest_raw_accept_any_return_headers():
         "signatures": [],
     }
 
-    client = fake_quay_client.FakeQuayClient(username="user", password="pass", host="quay.io")
+    client = fake_quay_client.FakeQuayClient(
+        username="user",
+        password="pass",
+        host="quay.io",
+        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+    )
     client.populate_manifest(
         "quay.io/namespace/image:1",
         "application/vnd.docker.distribution.manifest.v1+json",
@@ -175,12 +212,17 @@ def test_get_v2s1_manifest_wrong_type():
         "digest": "sha256:6d5f4d65fg4d6f54g",
         "platform": {"architecture": "arm64", "os": "linux"},
     }
-    client = fake_quay_client.FakeQuayClient(username="user", password="pass", host="quay.io")
+    client = fake_quay_client.FakeQuayClient(
+        username="user",
+        password="pass",
+        host="quay.io",
+        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+    )
     client.populate_manifest(
         "quay.io/namespace/image:1",
         "application/vnd.docker.distribution.manifest.v1+json",
         False,
-        v2s2_manifest,
+        json.dumps(v2s2_manifest, sort_keys=True),
     )
     with pytest.raises(
         exceptions.ManifestTypeError,
@@ -206,11 +248,16 @@ def test_upload_manifest_list_success():
             }
         ],
     }
-    client = fake_quay_client.FakeQuayClient(username="user", password="pass", host="quay.io")
-    client.upload_manifest(ml, "quay.io/namespace/image:1")
-    assert client._manifests["quay.io/namespace/image:1"][
+    client = fake_quay_client.FakeQuayClient(
+        username="user",
+        password="pass",
+        host="quay.io",
+        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+    )
+    client.upload_manifest(json.dumps(ml, sort_keys=True), "quay.io/namespace/image:1", raw=True)
+    assert client.manifests["quay.io/namespace/image:1"][
         "application/vnd.docker.distribution.manifest.list.v2+json"
-    ] == json.dumps(ml)
+    ] == json.dumps(ml, sort_keys=True)
 
 
 def test_upload_raw_manifest_success():
@@ -226,8 +273,13 @@ def test_upload_raw_manifest_success():
             }
         ],
     }
-    client = fake_quay_client.FakeQuayClient(username="user", password="pass", host="quay.io")
+    client = fake_quay_client.FakeQuayClient(
+        username="user",
+        password="pass",
+        host="quay.io",
+        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+    )
     client.upload_manifest(json.dumps(ml), "quay.io/namespace/image:1", raw=True)
-    assert client._manifests["quay.io/namespace/image:1"][
+    assert client.manifests["quay.io/namespace/image:1"][
         "application/vnd.docker.distribution.manifest.list.v2+json"
     ] == json.dumps(ml)

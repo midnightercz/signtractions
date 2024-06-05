@@ -1,25 +1,37 @@
 import json
+from typing import Union
 
 import pytest
-from pytractions.base import TList, Res, Arg, In
+from pytractions.base import TList, TDict, Res, Arg, In
 
 from signtractions.tractors.t_sign_containers import SignContainers
 from signtractions.resources.signing_wrapper import SignerWrapperSettings
 from signtractions.models.containers import ContainerParts
 from signtractions.models.signing import SignEntry
 
-from signtractions.resources.fake_signing_wrapper import FakeCosignSignerWrapper
+from signtractions.resources.fake_signing_wrapper import FakeCosignSignerWrapper, FakeEPRunArgs
 from signtractions.resources.fake_quay_client import FakeQuayClient
 
 
 @pytest.fixture
 def fake_cosign_wrapper():
-    return FakeCosignSignerWrapper(config_file="test", settings=SignerWrapperSettings())
+    return FakeCosignSignerWrapper(
+        config_file="test",
+        settings=SignerWrapperSettings(),
+        entry_point_requests=TList[FakeEPRunArgs]([]),
+        entry_point_returns=TList[TDict[str, TDict[str, str]]]([]),
+        entry_point_runs=TList[FakeEPRunArgs]([]),
+    )
 
 
 @pytest.fixture
 def fake_quay_client():
-    return FakeQuayClient(username="user", password="pass", host="quay.io")
+    return FakeQuayClient(
+        username="user",
+        password="pass",
+        host="quay.io",
+        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+    )
 
 
 def test_sign_containers_tags(fix_manifest_v2s2, fake_cosign_wrapper, fake_quay_client):
@@ -29,14 +41,24 @@ def test_sign_containers_tags(fix_manifest_v2s2, fake_cosign_wrapper, fake_quay_
         False,
         json.dumps(fix_manifest_v2s2),
     )
-    fake_cosign_wrapper._entry_point_returns[
-        (
-            (),
-            '{"config_file": "test", '
-            '"digest": ["sha256:6ef06d8c90c863ba4eb4297f1073ba8cb28c1f6570e2206cdaad2084e2a4715d"],'
-            ' "reference": ["quay.io/namespace/image:1"], "signing_key": "signing_key"}',
+    fake_cosign_wrapper.entry_point_requests.append(
+        FakeEPRunArgs(
+            args=TList[str]([]),
+            kwargs=TDict[str, Union[str, TList[str]]].content_from_json(
+                {
+                    "config_file": "test",
+                    "digest": TList[str](
+                        ["sha256:6ef06d8c90c863ba4eb4297f1073ba8cb28c1f6570e2206cdaad2084e2a4715d"]
+                    ),
+                    "reference": TList[str](["quay.io/namespace/image:1"]),
+                    "signing_key": "signing_key",
+                },
+            ),
         )
-    ] = {"signer_result": {"status": "ok"}}
+    )
+    fake_cosign_wrapper.entry_point_returns.append(
+        TDict[str, TDict[str, str]].content_from_json({"signer_result": {"status": "ok"}})
+    )
 
     t = SignContainers(
         uid="test",
@@ -89,22 +111,36 @@ def test_sign_containers_tags_ml(fix_manifest_list, fake_cosign_wrapper, fake_qu
         False,
         json.dumps(fix_manifest_list),
     )
-    fake_cosign_wrapper._entry_point_returns[
-        (
-            (),
-            '{"config_file": "test", "digest": ['
-            '"sha256:2e8f38a0a8d2a450598430fa70c7f0b53aeec991e76c3e29c63add599b4ef7ee", '
-            '"sha256:b3f9218fb5839763e62e52ee6567fe331aa1f3c644f9b6f232ff23959257acf9", '
-            '"sha256:496fb0ff2057c79254c9dc6ba999608a98219c5c93142569a547277c679e532c", '
-            '"sha256:146ab6fa7ba3ab4d154b09c1c5522e4966ecd071bf23d1ba3df6c8b9fc33f8cb", '
-            '"sha256:bbef1f46572d1f33a92b53b0ba0ed5a1d09dab7ffe64be1ae3ae66e76275eabd", '
-            '"sha256:d07476154b88059d730e260eba282b3c7a0b5e7feb620638d49070b71dcdcaf3"], '
-            '"reference": ["quay.io/namespace/image:1", "quay.io/namespace/image:1", '
-            '"quay.io/namespace/image:1", "quay.io/namespace/image:1", '
-            '"quay.io/namespace/image:1", "quay.io/namespace/image:1"], '
-            '"signing_key": "signing_key"}',
+    fake_cosign_wrapper.entry_point_requests.append(
+        FakeEPRunArgs(
+            args=TList[str]([]),
+            kwargs=TDict[str, Union[str, TList[str]]].content_from_json(
+                {
+                    "config_file": "test",
+                    "digest": [
+                        "sha256:2e8f38a0a8d2a450598430fa70c7f0b53aeec991e76c3e29c63add599b4ef7ee",
+                        "sha256:b3f9218fb5839763e62e52ee6567fe331aa1f3c644f9b6f232ff23959257acf9",
+                        "sha256:496fb0ff2057c79254c9dc6ba999608a98219c5c93142569a547277c679e532c",
+                        "sha256:146ab6fa7ba3ab4d154b09c1c5522e4966ecd071bf23d1ba3df6c8b9fc33f8cb",
+                        "sha256:bbef1f46572d1f33a92b53b0ba0ed5a1d09dab7ffe64be1ae3ae66e76275eabd",
+                        "sha256:d07476154b88059d730e260eba282b3c7a0b5e7feb620638d49070b71dcdcaf3",
+                    ],
+                    "reference": [
+                        "quay.io/namespace/image:1",
+                        "quay.io/namespace/image:1",
+                        "quay.io/namespace/image:1",
+                        "quay.io/namespace/image:1",
+                        "quay.io/namespace/image:1",
+                        "quay.io/namespace/image:1",
+                    ],
+                    "signing_key": "signing_key",
+                }
+            ),
         )
-    ] = {"signer_result": {"status": "ok"}}
+    )
+    fake_cosign_wrapper.entry_point_returns.append(
+        TDict[str, TDict[str, str]].content_from_json({"signer_result": {"status": "ok"}})
+    )
 
     t = SignContainers(
         uid="test",
@@ -198,14 +234,24 @@ def test_sign_containers_digests(fix_manifest_v2s2, fake_cosign_wrapper, fake_qu
         False,
         json.dumps(fix_manifest_v2s2),
     )
-    fake_cosign_wrapper._entry_point_returns[
-        (
-            (),
-            '{"config_file": "test", '
-            '"digest": ["sha256:6ef06d8c90c863ba4eb4297f1073ba8cb28c1f6570e2206cdaad2084e2a4715d"],'
-            ' "reference": [null], "signing_key": "signing_key"}',
+    fake_cosign_wrapper.entry_point_requests.append(
+        FakeEPRunArgs(
+            args=TList[str]([]),
+            kwargs=TDict[str, Union[str, TList[str]]].content_from_json(
+                {
+                    "config_file": "test",
+                    "digest": [
+                        "sha256:6ef06d8c90c863ba4eb4297f1073ba8cb28c1f6570e2206cdaad2084e2a4715d"
+                    ],
+                    "reference": [None],
+                    "signing_key": "signing_key",
+                }
+            ),
         )
-    ] = {"signer_result": {"status": "ok"}}
+    )
+    fake_cosign_wrapper.entry_point_returns.append(
+        TDict[str, TDict[str, str]].content_from_json({"signer_result": {"status": "ok"}})
+    )
 
     t = SignContainers(
         uid="test",
@@ -268,20 +314,29 @@ def test_sign_containers_digests_ml(fix_manifest_list, fake_cosign_wrapper, fake
         False,
         json.dumps(fix_manifest_list),
     )
-    fake_cosign_wrapper._entry_point_returns[
-        (
-            (),
-            '{"config_file": "test", "digest": ['
-            '"sha256:2e8f38a0a8d2a450598430fa70c7f0b53aeec991e76c3e29c63add599b4ef7ee", '
-            '"sha256:b3f9218fb5839763e62e52ee6567fe331aa1f3c644f9b6f232ff23959257acf9", '
-            '"sha256:496fb0ff2057c79254c9dc6ba999608a98219c5c93142569a547277c679e532c", '
-            '"sha256:146ab6fa7ba3ab4d154b09c1c5522e4966ecd071bf23d1ba3df6c8b9fc33f8cb", '
-            '"sha256:bbef1f46572d1f33a92b53b0ba0ed5a1d09dab7ffe64be1ae3ae66e76275eabd", '
-            '"sha256:d07476154b88059d730e260eba282b3c7a0b5e7feb620638d49070b71dcdcaf3"], '
-            '"reference": [null, null, null, null, null, null], '
-            '"signing_key": "signing_key"}',
+    fake_cosign_wrapper.entry_point_requests.append(
+        FakeEPRunArgs(
+            args=TList[str]([]),
+            kwargs=TDict[str, Union[str, TList[str]]].content_from_json(
+                {
+                    "config_file": "test",
+                    "digest": [
+                        "sha256:2e8f38a0a8d2a450598430fa70c7f0b53aeec991e76c3e29c63add599b4ef7ee",
+                        "sha256:b3f9218fb5839763e62e52ee6567fe331aa1f3c644f9b6f232ff23959257acf9",
+                        "sha256:496fb0ff2057c79254c9dc6ba999608a98219c5c93142569a547277c679e532c",
+                        "sha256:146ab6fa7ba3ab4d154b09c1c5522e4966ecd071bf23d1ba3df6c8b9fc33f8cb",
+                        "sha256:bbef1f46572d1f33a92b53b0ba0ed5a1d09dab7ffe64be1ae3ae66e76275eabd",
+                        "sha256:d07476154b88059d730e260eba282b3c7a0b5e7feb620638d49070b71dcdcaf3",
+                    ],
+                    "reference": [None, None, None, None, None, None],
+                    "signing_key": "signing_key",
+                }
+            ),
         )
-    ] = {"signer_result": {"status": "ok"}}
+    )
+    fake_cosign_wrapper.entry_point_returns.append(
+        TDict[str, TDict[str, str]]({"signer_result": TDict[str, str]({"status": "ok"})})
+    )
 
     t = SignContainers(
         uid="test",

@@ -10,6 +10,8 @@ from ..tractions.signing import STMDSignEntriesFromContainerParts
 
 from ..resources.quay_client import QuayClient
 from ..resources.signing_wrapper import MsgSignerWrapper, CosignSignerWrapper
+from ..resources.fake_signing_wrapper import FakeCosignSignerWrapper
+from ..resources.fake_quay_client import FakeQuayClient
 
 from ..models.signing import SignEntry
 
@@ -17,10 +19,10 @@ from ..models.signing import SignEntry
 class SignContainers(Tractor):
     """Sign container images."""
 
-    r_signer_wrapper_cosign: Res[Union[MsgSignerWrapper, CosignSignerWrapper]] = TRes[
-        Union[MsgSignerWrapper, CosignSignerWrapper]
+    r_signer_wrapper_cosign: Res[Union[MsgSignerWrapper, CosignSignerWrapper, FakeCosignSignerWrapper]] = TRes[
+        Union[MsgSignerWrapper, CosignSignerWrapper, FakeCosignSignerWrapper]
     ]()
-    r_dst_quay_client: Res[QuayClient] = TRes[QuayClient]()
+    r_dst_quay_client: Res[Union[QuayClient, FakeQuayClient]] = TRes[Union[QuayClient, FakeQuayClient]]()
     i_container_image_references: In[TList[str]] = TIn[TList[str]]()
     i_task_id: In[int] = In[int](data=1)
     i_signing_keys: In[TList[str]] = TIn[TList[str]]()

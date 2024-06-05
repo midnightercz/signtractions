@@ -1,9 +1,10 @@
 import pytest
+from typing import Union
 
-from pytractions.base import In, TList, Res
+from pytractions.base import In, TList, TDict, Res
 
 from signtractions.resources.signing_wrapper import SignerWrapperSettings
-from signtractions.resources.fake_signing_wrapper import FakeCosignSignerWrapper
+from signtractions.resources.fake_signing_wrapper import FakeCosignSignerWrapper, FakeEPRunArgs
 from signtractions.tractions.signing import (
     SignEntriesFromContainerParts,
     SignEntry,
@@ -48,14 +49,26 @@ def test_sign_sign_entries():
     fsw = FakeCosignSignerWrapper(
         config_file="test",
         settings=SignerWrapperSettings(),
+        entry_point_requests=TList[FakeEPRunArgs]([]),
+        entry_point_returns=TList[TDict[str, TDict[str, str]]]([]),
+        entry_point_runs=TList[FakeEPRunArgs]([]),
     )
-    fsw._entry_point_returns[
-        (
-            (),
-            '{"config_file": "test", "digest": ["sha256:123456"], '
-            '"reference": ["quay.io/containers/podman:latest"], "signing_key": "signing_key"}',
+    fsw.entry_point_requests.append(
+        FakeEPRunArgs(
+            args=TList[str]([]),
+            kwargs=TDict[str, Union[str, TList[str]]](
+                {
+                    "config_file": "test",
+                    "signing_key": "signing_key",
+                    "digest": TList[str](["sha256:123456"]),
+                    "reference": TList[str](["quay.io/containers/podman:latest"]),
+                }
+            ),
         )
-    ] = {"signer_result": {"status": "ok"}}
+    )
+    fsw.entry_point_returns.append(
+        TDict[str, TDict[str, str]]({"signer_result": TDict[str, str]({"status": "ok"})})
+    )
     t = SignSignEntries(
         uid="test",
         r_signer_wrapper=Res[FakeCosignSignerWrapper](r=fsw),
@@ -81,14 +94,28 @@ def test_sign_sign_entries_fail():
     fsw = FakeCosignSignerWrapper(
         config_file="test",
         settings=SignerWrapperSettings(),
+        entry_point_requests=TList[FakeEPRunArgs]([]),
+        entry_point_returns=TList[TDict[str, TDict[str, str]]]([]),
+        entry_point_runs=TList[FakeEPRunArgs]([]),
     )
-    fsw._entry_point_returns[
-        (
-            (),
-            '{"config_file": "test", "digest": ["sha256:123456"], "reference": '
-            '["quay.io/containers/podman:latest"], "signing_key": "signing_key"}',
+    fsw.entry_point_requests.append(
+        FakeEPRunArgs(
+            args=TList[str]([]),
+            kwargs=TDict[str, Union[str, TList[str]]].content_from_json(
+                {
+                    "config_file": "test",
+                    "digest": TList[str](["sha256:123456"]),
+                    "reference": TList[str](["quay.io/containers/podman:latest"]),
+                    "signing_key": "signing_key",
+                }
+            ),
         )
-    ] = {"signer_result": {"status": "error", "error_message": "test error"}}
+    )
+    fsw.entry_point_returns.append(
+        TDict[str, TDict[str, str]].content_from_json(
+            {"signer_result": {"status": "error", "error_message": "test error"}}
+        )
+    )
     t = SignSignEntries(
         uid="test",
         r_signer_wrapper=Res[FakeCosignSignerWrapper](r=fsw),

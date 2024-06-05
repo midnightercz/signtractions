@@ -1,7 +1,7 @@
 import json
 import pytest
 
-from pytractions.base import Arg, In, TList, STMDExecutorType, Res
+from pytractions.base import Arg, In, TList, TDict, STMDExecutorType, Res
 
 from signtractions.resources.fake_quay_client import FakeQuayClient, ManifestNotFoundError
 
@@ -73,7 +73,12 @@ def test_parse_container_image_reference_stmd_tag():
 
 
 def test_populate_container_digest_manifest_not_found():
-    fqc = FakeQuayClient(username="test", password="test", host="test")
+    fqc = FakeQuayClient(
+        username="test",
+        password="test",
+        host="test",
+        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+    )
     t = PopulateContainerDigest(
         uid="test",
         i_container_parts=In[ContainerParts](
@@ -92,7 +97,12 @@ def test_populate_container_digest_manifest_not_found():
 
 
 def test_populate_container_digest_manifest(fix_manifest_v2s2):
-    fqc = FakeQuayClient(username="test", password="test", host="test")
+    fqc = FakeQuayClient(
+        username="test",
+        password="test",
+        host="test",
+        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+    )
     fqc.populate_manifest(
         "quay.io/containers/podman:latest",
         "application/vnd.docker.distribution.manifest.v2+json",
@@ -123,7 +133,12 @@ def test_populate_container_digest_manifest(fix_manifest_v2s2):
 
 
 def test_populate_container_digest_manifest_list(fix_manifest_list):
-    fqc = FakeQuayClient(username="test", password="test", host="test")
+    fqc = FakeQuayClient(
+        username="test",
+        password="test",
+        host="test",
+        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+    )
     fqc.populate_manifest(
         "quay.io/containers/podman:latest",
         "application/vnd.docker.distribution.manifest.list.v2+json",
@@ -161,7 +176,12 @@ def test_populate_container_digest_manifest_list(fix_manifest_list):
 
 
 def test_populate_container_digest_manifest_list_by_digest(fix_manifest_list):
-    fqc = FakeQuayClient(username="test", password="test", host="test")
+    fqc = FakeQuayClient(
+        username="test",
+        password="test",
+        host="test",
+        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+    )
     fqc.populate_manifest(
         "quay.io/containers/podman@sha256:2e8f38a0a8d2a450598430fa"
         "70c7f0b53aeec991e76c3e29c63add599b4ef7ee",
