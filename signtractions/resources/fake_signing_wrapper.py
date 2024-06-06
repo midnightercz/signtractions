@@ -19,8 +19,9 @@ class FakeCosignSignerWrapper(CosignSignerWrapper):
     """Fake cosign signer wrapper for testing."""
 
     entry_point_requests: TList[FakeEPRunArgs] = field(default_factory=TList[FakeEPRunArgs])
-    entry_point_returns: TList[TDict[str, TDict[str, str]]] = \
-        field(default_factory=TList[TDict[str, TDict[str, str]]])
+    entry_point_returns: TList[TDict[str, TDict[str, str]]] = field(
+        default_factory=TList[TDict[str, TDict[str, str]]]
+    )
     entry_point_runs: TList[FakeEPRunArgs] = field(default_factory=TList[FakeEPRunArgs])
 
     def _fake_ep(self, *args, **kwargs):

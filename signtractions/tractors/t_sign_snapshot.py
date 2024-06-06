@@ -23,7 +23,9 @@ class SignSnapshot(Tractor):
     r_signer_wrapper_cosign: Res[
         Union[FakeCosignSignerWrapper, MsgSignerWrapper, CosignSignerWrapper]
     ] = TRes[Union[FakeCosignSignerWrapper, MsgSignerWrapper, CosignSignerWrapper]]()
-    r_dst_quay_client: Res[Union[QuayClient, FakeQuayClient]] = TRes[Union[QuayClient,FakeQuayClient]]()
+    r_dst_quay_client: Res[Union[QuayClient, FakeQuayClient]] = TRes[
+        Union[QuayClient, FakeQuayClient]
+    ]()
     i_snapshot_str: In[str] = TIn[str]()
     i_snapshot_file: In[str] = TIn[str]()
     i_signing_key: In[str] = TIn[str]()

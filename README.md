@@ -226,14 +226,14 @@ with scalar value.
 **Resources**:
 * **Name**: r_signer_wrapper_cosign
 
-	**Type**: Res[Union[MsgSignerWrapper,CosignSignerWrapper]]
+	**Type**: Res[Union[MsgSignerWrapper,CosignSignerWrapper,FakeCosignSignerWrapper]]
 
 	**Docs**: 
 	
 
 * **Name**: r_dst_quay_client
 
-	**Type**: Res[QuayClient]
+	**Type**: Res[Union[QuayClient,FakeQuayClient]]
 
 	**Docs**: 
 
