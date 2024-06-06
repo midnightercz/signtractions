@@ -1,5 +1,6 @@
 from typing import cast
 import json
+import logging
 
 from pytractions.base import TDict
 
@@ -7,6 +8,10 @@ from .quay_client import QuayClient, ManifestTypeError, ManifestNotFoundError
 
 from .types import ManifestList, Manifest
 
+
+LOG = logging.getLogger()
+logging.basicConfig()
+LOG.setLevel(logging.INFO)
 
 class FakeQuayClient(QuayClient):
     """Class for performing Docker HTTP API operations with the Quay registry."""
@@ -18,7 +23,11 @@ class FakeQuayClient(QuayClient):
 
     def __post_init__(self):
         """Fake quay client post init."""
-        self._manifests = TDict[str, TDict[str, str]].content_from_json({})
+        LOG.info("Populate fake manifests:")
+        for image, media_types in self.manifests:
+            LOG.info("Image: {}".format(image))
+            for mtype in media_types:
+                LOG.info("\tMedia Type {}".format(mtype))
 
     def populate_manifest(self, image, media_type, return_headers, manifest):
         """Populate fake quay client with manifest for given media_type."""
