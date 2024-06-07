@@ -72,10 +72,13 @@ class PopulateContainerDigest(Traction):
     def _run(self, on_update: OnUpdateCallable = None) -> None:
         self.o_container_parts.data = self.i_container_parts.data
         if self.i_container_parts.data.tag:
-            LOG.info("Fetching {}/{}:{}".format(
+            LOG.info(
+                "Fetching {}/{}:{}".format(
                     self.i_container_parts.data.registry,
                     self.i_container_parts.data.image,
-                    self.i_container_parts.data.tag))
+                    self.i_container_parts.data.tag,
+                )
+            )
             manifest_str = self.r_quay_client.r.get_manifest(
                 "{}/{}:{}".format(
                     self.i_container_parts.data.registry,
@@ -85,11 +88,13 @@ class PopulateContainerDigest(Traction):
                 raw=True,
             )
         else:
-            LOG.info("Fetching {}/{}@{}".format(
+            LOG.info(
+                "Fetching {}/{}@{}".format(
                     self.i_container_parts.data.registry,
                     self.i_container_parts.data.image,
                     self.i_container_parts.data.digests[0],
-                ))
+                )
+            )
             manifest_str = self.r_quay_client.r.get_manifest(
                 "{}/{}@{}".format(
                     self.i_container_parts.data.registry,

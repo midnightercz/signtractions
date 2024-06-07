@@ -13,6 +13,7 @@ LOG = logging.getLogger()
 logging.basicConfig()
 LOG.setLevel(logging.INFO)
 
+
 class FakeQuayClient(QuayClient):
     """Class for performing Docker HTTP API operations with the Quay registry."""
 
