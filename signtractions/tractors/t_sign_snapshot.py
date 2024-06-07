@@ -67,3 +67,9 @@ class SignSnapshot(Tractor):
     d_i_snapshot_file: str = "Path to a file containing snapshot in json format."
     d_a_pool_size: str = "Pool size used for STMD tractions"
     d_i_signing_key: str = "Signing key used to sign containers. One key per container."
+    d_r_signer_wrapper_cosign: str = "Signer wrapper used to sign container images."
+    d_r_dst_quay_client: str = "Quay client used for fetching container images when populating "\
+        "digests in SignEntries."
+    d_t_container_images_from_snapshot: str = "Extract container images from snapshot."
+    d_t_populate_signing_keys: str = "Populate signing keys for each container image."
+    d_t_sign_containers: str = "Sign containers in release snapshot."
