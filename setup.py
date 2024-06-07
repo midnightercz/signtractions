@@ -41,7 +41,7 @@ setup(
     long_description_content_type="text/x-rst",
     author="Jindrich Luza",
     author_email="jluza@redhat.com",
-    url="https://gitlab.com/exd-sp-cloud-dist/signtractions",
+    url="https://github.com/midnightercz/signtractions",
     classifiers=classifiers,
     python_requires=">=3.6",
     packages=find_packages(exclude=["tests"]),
