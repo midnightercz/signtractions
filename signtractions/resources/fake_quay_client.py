@@ -2,7 +2,7 @@ from typing import cast
 import json
 import logging
 
-from pytractions.base import TDict
+from pytractions.base import TDict, doc
 
 from .quay_client import QuayClient, ManifestTypeError, ManifestNotFoundError
 
@@ -17,23 +17,22 @@ LOG.setLevel(logging.INFO)
 class FakeQuayClient(QuayClient):
     """Class for performing Docker HTTP API operations with the Quay registry."""
 
-    username: str
-    password: str
-    host: str
-    manifests: TDict[str, TDict[str, str]]
+    fake_manifests: TDict[str, TDict[str, str]]
+    
+    d_fake_manifests: str = doc("Fake manifests for testing.")
 
     def __post_init__(self):
         """Fake quay client post init."""
         LOG.info("Populate fake manifests:")
-        for image, media_types in self.manifests:
+        for image, media_types in self.fake_manifests:
             LOG.info("Image: {}".format(image))
             for mtype in media_types:
                 LOG.info("\tMedia Type {}".format(mtype))
 
     def populate_manifest(self, image, media_type, return_headers, manifest):
         """Populate fake quay client with manifest for given media_type."""
-        self.manifests.setdefault(image, TDict[str, str]({}))
-        self.manifests[image][media_type] = manifest
+        self.fake_manifests.setdefault(image, TDict[str, str]({}))
+        self.fake_manifests[image][media_type] = manifest
 
     def get_manifest(
         self,
@@ -70,15 +69,15 @@ class FakeQuayClient(QuayClient):
                 If Manifest list and V2S1 manifest are requested at the same time.
         """
         if media_type is not None:
-            if image in self.manifests and media_type in self.manifests[image]:
+            if image in self.fake_manifests and media_type in self.fake_manifests[image]:
                 if raw:
                     if return_headers:
-                        return (self.manifests[image][media_type], {"return": "headers"})
+                        return (self.fake_manifests[image][media_type], {"return": "headers"})
                     else:
-                        return self.manifests[image][media_type]
+                        return self.fake_manifests[image][media_type]
                 else:
-                    return json.loads(self.manifests[image][media_type])
-            elif image in self.manifests and media_type not in self.manifests[image]:
+                    return json.loads(self.fake_manifests[image][media_type])
+            elif image in self.fake_manifests and media_type not in self.fake_manifests[image]:
                 raise ManifestTypeError(
                     "Image {0} doesn't have a {1} manifest".format(image, media_type)
                 )
@@ -92,14 +91,14 @@ class FakeQuayClient(QuayClient):
                 QuayClient._MANIFEST_OCI_V2S2_TYPE,
                 QuayClient._MANIFEST_V2S1_TYPE,
             ):
-                if image in self.manifests and manifest_type in self.manifests[image]:
+                if image in self.fake_manifests and manifest_type in self.fake_manifests[image]:
                     if raw:
                         if return_headers:
-                            return (self.manifests[image][manifest_type], {"return": "headers"})
+                            return (self.fake_manifests[image][manifest_type], {"return": "headers"})
                         else:
-                            return self.manifests[image][manifest_type]
+                            return self.fake_manifests[image][manifest_type]
                     else:
-                        return json.loads(self.manifests[image][manifest_type])
+                        return json.loads(self.fake_manifests[image][manifest_type])
             else:
                 raise ManifestNotFoundError()
 
@@ -121,9 +120,9 @@ class FakeQuayClient(QuayClient):
             manifest_type = json.loads(cast(str, manifest)).get(
                 "mediaType", self._MANIFEST_V2S1_TYPE
             )
-            self.manifests.setdefault(image, TDict[str, str]({}))[manifest_type] = manifest
+            self.fake_manifests.setdefault(image, TDict[str, str]({}))[manifest_type] = manifest
         else:
             manifest_type = cast(ManifestList, manifest).get("mediaType", self._MANIFEST_V2S1_TYPE)
-            self.manifests.setdefault(image, TDict[str, str]({}))[manifest_type] = json.dumps(
+            self.fake_manifests.setdefault(image, TDict[str, str]({}))[manifest_type] = json.dumps(
                 manifest
             )
