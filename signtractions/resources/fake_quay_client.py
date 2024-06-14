@@ -18,7 +18,6 @@ class FakeQuayClient(QuayClient):
     """Class for performing Docker HTTP API operations with the Quay registry."""
 
     fake_manifests: TDict[str, TDict[str, str]]
-    
     d_fake_manifests: str = doc("Fake manifests for testing.")
 
     def __post_init__(self):
@@ -94,7 +93,10 @@ class FakeQuayClient(QuayClient):
                 if image in self.fake_manifests and manifest_type in self.fake_manifests[image]:
                     if raw:
                         if return_headers:
-                            return (self.fake_manifests[image][manifest_type], {"return": "headers"})
+                            return (
+                                self.fake_manifests[image][manifest_type],
+                                {"return": "headers"},
+                            )
                         else:
                             return self.fake_manifests[image][manifest_type]
                     else:

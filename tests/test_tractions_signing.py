@@ -3,7 +3,7 @@ from typing import Union
 
 from pytractions.base import In, TList, TDict, Res
 
-from signtractions.resources.signing_wrapper import SignerWrapperSettings
+from signtractions.resources.signing_wrapper import CosignSignerSettings
 from signtractions.resources.fake_signing_wrapper import FakeCosignSignerWrapper, FakeEPRunArgs
 from signtractions.tractions.signing import (
     SignEntriesFromContainerParts,
@@ -48,12 +48,12 @@ def test_sign_entries_from_container_parts():
 def test_sign_sign_entries():
     fsw = FakeCosignSignerWrapper(
         config_file="test",
-        settings=SignerWrapperSettings(),
-        entry_point_requests=TList[FakeEPRunArgs]([]),
-        entry_point_returns=TList[TDict[str, TDict[str, str]]]([]),
-        entry_point_runs=TList[FakeEPRunArgs]([]),
+        settings=CosignSignerSettings(),
+        fake_entry_point_requests=TList[FakeEPRunArgs]([]),
+        fake_entry_point_returns=TList[TDict[str, TDict[str, str]]]([]),
+        fake_entry_point_runs=TList[FakeEPRunArgs]([]),
     )
-    fsw.entry_point_requests.append(
+    fsw.fake_entry_point_requests.append(
         FakeEPRunArgs(
             args=TList[str]([]),
             kwargs=TDict[str, Union[str, TList[str]]](
@@ -66,7 +66,7 @@ def test_sign_sign_entries():
             ),
         )
     )
-    fsw.entry_point_returns.append(
+    fsw.fake_entry_point_returns.append(
         TDict[str, TDict[str, str]]({"signer_result": TDict[str, str]({"status": "ok"})})
     )
     t = SignSignEntries(
@@ -93,12 +93,12 @@ def test_sign_sign_entries():
 def test_sign_sign_entries_fail():
     fsw = FakeCosignSignerWrapper(
         config_file="test",
-        settings=SignerWrapperSettings(),
-        entry_point_requests=TList[FakeEPRunArgs]([]),
-        entry_point_returns=TList[TDict[str, TDict[str, str]]]([]),
-        entry_point_runs=TList[FakeEPRunArgs]([]),
+        settings=CosignSignerSettings(),
+        fake_entry_point_requests=TList[FakeEPRunArgs]([]),
+        fake_entry_point_returns=TList[TDict[str, TDict[str, str]]]([]),
+        fake_entry_point_runs=TList[FakeEPRunArgs]([]),
     )
-    fsw.entry_point_requests.append(
+    fsw.fake_entry_point_requests.append(
         FakeEPRunArgs(
             args=TList[str]([]),
             kwargs=TDict[str, Union[str, TList[str]]].content_from_json(
@@ -111,7 +111,7 @@ def test_sign_sign_entries_fail():
             ),
         )
     )
-    fsw.entry_point_returns.append(
+    fsw.fake_entry_point_returns.append(
         TDict[str, TDict[str, str]].content_from_json(
             {"signer_result": {"status": "error", "error_message": "test error"}}
         )

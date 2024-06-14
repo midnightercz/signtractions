@@ -24,7 +24,7 @@ def test_get_manifest_list_success():
         username="user",
         password="pass",
         host="quay.io",
-        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
     )
     client.populate_manifest(
         "quay.io/namespace/image:1",
@@ -56,7 +56,7 @@ def test_get_manifest_list_raw_success():
         username="user",
         password="pass",
         host="quay.io",
-        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
     )
     client.populate_manifest(
         "quay.io/namespace/image:1",
@@ -89,7 +89,7 @@ def test_get_manifest_list_raw_return_headers_success():
         username="user",
         password="pass",
         host="quay.io",
-        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
     )
     client.populate_manifest(
         "quay.io/namespace/image:1",
@@ -118,7 +118,7 @@ def test_get_manifest_list_wrong_type():
         username="user",
         password="pass",
         host="quay.io",
-        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
     )
     client.populate_manifest(
         "quay.io/namespace/image:1",
@@ -139,7 +139,7 @@ def test_get_manifest_list_not_found():
         username="user",
         password="pass",
         host="quay.io",
-        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
     )
     with pytest.raises(exceptions.ManifestNotFoundError):
         client.get_manifest(
@@ -163,7 +163,7 @@ def test_get_manifest_accept_any():
         username="user",
         password="pass",
         host="quay.io",
-        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
     )
     client.populate_manifest(
         "quay.io/namespace/image:1",
@@ -190,7 +190,7 @@ def test_get_manifest_raw_accept_any_return_headers():
         username="user",
         password="pass",
         host="quay.io",
-        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
     )
     client.populate_manifest(
         "quay.io/namespace/image:1",
@@ -216,7 +216,7 @@ def test_get_v2s1_manifest_wrong_type():
         username="user",
         password="pass",
         host="quay.io",
-        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
     )
     client.populate_manifest(
         "quay.io/namespace/image:1",
@@ -252,10 +252,10 @@ def test_upload_manifest_list_success():
         username="user",
         password="pass",
         host="quay.io",
-        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
     )
     client.upload_manifest(json.dumps(ml, sort_keys=True), "quay.io/namespace/image:1", raw=True)
-    assert client.manifests["quay.io/namespace/image:1"][
+    assert client.fake_manifests["quay.io/namespace/image:1"][
         "application/vnd.docker.distribution.manifest.list.v2+json"
     ] == json.dumps(ml, sort_keys=True)
 
@@ -277,9 +277,9 @@ def test_upload_raw_manifest_success():
         username="user",
         password="pass",
         host="quay.io",
-        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
     )
     client.upload_manifest(json.dumps(ml), "quay.io/namespace/image:1", raw=True)
-    assert client.manifests["quay.io/namespace/image:1"][
+    assert client.fake_manifests["quay.io/namespace/image:1"][
         "application/vnd.docker.distribution.manifest.list.v2+json"
     ] == json.dumps(ml)

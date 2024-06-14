@@ -30,9 +30,9 @@ class QuayClient(Base):
     password: str
     host: str
 
-    d_username: str = doc('Username for Quay registry.')
-    d_password: str = doc('Password for Quay registry.')
-    d_host: str = doc('Quay registry hostname.')
+    d_username: str = doc("Username for Quay registry.")
+    d_password: str = doc("Password for Quay registry.")
+    d_host: str = doc("Quay registry hostname.")
 
     def __post_init__(self, *args, **kwargs):
         """Post init for quay client."""

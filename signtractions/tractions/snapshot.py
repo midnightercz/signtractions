@@ -23,9 +23,11 @@ class ParseSnapshot(Traction):
 
     def _run(self, on_update: OnUpdateCallable = None) -> None:
         if self.i_snapshot_str.data:
-            self.o_snapshot.data = SnapshotSpec.content_from_json(json.loads(self.i_snapshot_str.data))
+            self.o_snapshot_spec.data = SnapshotSpec.content_from_json(
+                json.loads(self.i_snapshot_str.data)
+            )
         else:
-            self.o_snapshot.data = SnapshotSpec.content_from_json(
+            self.o_snapshot_spec.data = SnapshotSpec.content_from_json(
                 json.load(open(self.i_snapshot_file.data))
             )
 

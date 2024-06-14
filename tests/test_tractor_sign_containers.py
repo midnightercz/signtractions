@@ -5,7 +5,7 @@ import pytest
 from pytractions.base import TList, TDict, Res, Arg, In
 
 from signtractions.tractors.t_sign_containers import SignContainers
-from signtractions.resources.signing_wrapper import SignerWrapperSettings
+from signtractions.resources.signing_wrapper import CosignSignerSettings
 from signtractions.models.containers import ContainerParts
 from signtractions.models.signing import SignEntry
 
@@ -17,10 +17,10 @@ from signtractions.resources.fake_quay_client import FakeQuayClient
 def fake_cosign_wrapper():
     return FakeCosignSignerWrapper(
         config_file="test",
-        settings=SignerWrapperSettings(),
-        entry_point_requests=TList[FakeEPRunArgs]([]),
-        entry_point_returns=TList[TDict[str, TDict[str, str]]]([]),
-        entry_point_runs=TList[FakeEPRunArgs]([]),
+        settings=CosignSignerSettings(),
+        fake_entry_point_requests=TList[FakeEPRunArgs]([]),
+        fake_entry_point_returns=TList[TDict[str, TDict[str, str]]]([]),
+        fake_entry_point_runs=TList[FakeEPRunArgs]([]),
     )
 
 
@@ -30,7 +30,7 @@ def fake_quay_client():
         username="user",
         password="pass",
         host="quay.io",
-        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
     )
 
 
@@ -41,7 +41,7 @@ def test_sign_containers_tags(fix_manifest_v2s2, fake_cosign_wrapper, fake_quay_
         False,
         json.dumps(fix_manifest_v2s2),
     )
-    fake_cosign_wrapper.entry_point_requests.append(
+    fake_cosign_wrapper.fake_entry_point_requests.append(
         FakeEPRunArgs(
             args=TList[str]([]),
             kwargs=TDict[str, Union[str, TList[str]]].content_from_json(
@@ -56,7 +56,7 @@ def test_sign_containers_tags(fix_manifest_v2s2, fake_cosign_wrapper, fake_quay_
             ),
         )
     )
-    fake_cosign_wrapper.entry_point_returns.append(
+    fake_cosign_wrapper.fake_entry_point_returns.append(
         TDict[str, TDict[str, str]].content_from_json({"signer_result": {"status": "ok"}})
     )
 
@@ -111,7 +111,7 @@ def test_sign_containers_tags_ml(fix_manifest_list, fake_cosign_wrapper, fake_qu
         False,
         json.dumps(fix_manifest_list),
     )
-    fake_cosign_wrapper.entry_point_requests.append(
+    fake_cosign_wrapper.fake_entry_point_requests.append(
         FakeEPRunArgs(
             args=TList[str]([]),
             kwargs=TDict[str, Union[str, TList[str]]].content_from_json(
@@ -138,7 +138,7 @@ def test_sign_containers_tags_ml(fix_manifest_list, fake_cosign_wrapper, fake_qu
             ),
         )
     )
-    fake_cosign_wrapper.entry_point_returns.append(
+    fake_cosign_wrapper.fake_entry_point_returns.append(
         TDict[str, TDict[str, str]].content_from_json({"signer_result": {"status": "ok"}})
     )
 
@@ -234,7 +234,7 @@ def test_sign_containers_digests(fix_manifest_v2s2, fake_cosign_wrapper, fake_qu
         False,
         json.dumps(fix_manifest_v2s2),
     )
-    fake_cosign_wrapper.entry_point_requests.append(
+    fake_cosign_wrapper.fake_entry_point_requests.append(
         FakeEPRunArgs(
             args=TList[str]([]),
             kwargs=TDict[str, Union[str, TList[str]]].content_from_json(
@@ -249,7 +249,7 @@ def test_sign_containers_digests(fix_manifest_v2s2, fake_cosign_wrapper, fake_qu
             ),
         )
     )
-    fake_cosign_wrapper.entry_point_returns.append(
+    fake_cosign_wrapper.fake_entry_point_returns.append(
         TDict[str, TDict[str, str]].content_from_json({"signer_result": {"status": "ok"}})
     )
 
@@ -314,7 +314,7 @@ def test_sign_containers_digests_ml(fix_manifest_list, fake_cosign_wrapper, fake
         False,
         json.dumps(fix_manifest_list),
     )
-    fake_cosign_wrapper.entry_point_requests.append(
+    fake_cosign_wrapper.fake_entry_point_requests.append(
         FakeEPRunArgs(
             args=TList[str]([]),
             kwargs=TDict[str, Union[str, TList[str]]].content_from_json(
@@ -334,7 +334,7 @@ def test_sign_containers_digests_ml(fix_manifest_list, fake_cosign_wrapper, fake
             ),
         )
     )
-    fake_cosign_wrapper.entry_point_returns.append(
+    fake_cosign_wrapper.fake_entry_point_returns.append(
         TDict[str, TDict[str, str]]({"signer_result": TDict[str, str]({"status": "ok"})})
     )
 

@@ -43,10 +43,12 @@ def test_parse_container_image_reference_stmd_tag():
     t = STMDParseContainerImageReference(
         uid="test",
         i_container_image_reference=In[TList[str]](
-            data=[
-                "quay.io/containers/podman:latest",
-                "quay.io/containers/podman:greatest",
-            ]
+            data=TList[str](
+                [
+                    "quay.io/containers/podman:latest",
+                    "quay.io/containers/podman:greatest",
+                ]
+            )
         ),
         a_executor_type=Arg[STMDExecutorType](a=STMDExecutorType.LOCAL),
         a_pool_size=Arg[int](a=1),
@@ -77,7 +79,7 @@ def test_populate_container_digest_manifest_not_found():
         username="test",
         password="test",
         host="test",
-        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
     )
     t = PopulateContainerDigest(
         uid="test",
@@ -101,7 +103,7 @@ def test_populate_container_digest_manifest(fix_manifest_v2s2):
         username="test",
         password="test",
         host="test",
-        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
     )
     fqc.populate_manifest(
         "quay.io/containers/podman:latest",
@@ -137,7 +139,7 @@ def test_populate_container_digest_manifest_list(fix_manifest_list):
         username="test",
         password="test",
         host="test",
-        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
     )
     fqc.populate_manifest(
         "quay.io/containers/podman:latest",
@@ -180,7 +182,7 @@ def test_populate_container_digest_manifest_list_by_digest(fix_manifest_list):
         username="test",
         password="test",
         host="test",
-        manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
     )
     fqc.populate_manifest(
         "quay.io/containers/podman@sha256:2e8f38a0a8d2a450598430fa"
