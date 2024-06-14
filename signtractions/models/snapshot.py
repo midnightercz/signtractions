@@ -20,7 +20,7 @@ class ComponentSource(Base):
     git: Optional[ComponentSourceGit]
 
 
-class SnapshotComponent(Base):
+class SnapshotSpecComponent(Base):
     """Snapshot component data structure."""
 
     name: str = ""
@@ -29,9 +29,9 @@ class SnapshotComponent(Base):
     source: Optional[ComponentSource] = None
 
 
-class Snapshot(Base):
+class SnapshotSpec(Base):
     """Data structure to hold container reference parts."""
 
     application: str = ""
-    components: TList[SnapshotComponent] = field(default_factory=TList[SnapshotComponent])
+    components: TList[SnapshotSpecComponent] = field(default_factory=TList[SnapshotSpecComponent])
     artifacts: TDict[str, str] = field(default_factory=TDict[str, str])

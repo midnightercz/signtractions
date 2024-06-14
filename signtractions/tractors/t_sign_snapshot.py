@@ -39,7 +39,7 @@ class SignSnapshot(Tractor):
         i_snapshot_file=i_snapshot_file,
     )
     t_container_images_from_snapshot: ContainerImagesFromSnapshot = ContainerImagesFromSnapshot(
-        uid="container_images_from_snapshot", i_snapshot=t_parse_snapshot.o_snapshot
+        uid="container_images_from_snapshot", i_snapshot_spec=t_parse_snapshot.o_snapshot_spec
     )
     t_populate_signing_keys: ListMultiplier[str, str] = ListMultiplier[str, str](
         uid="populate_signing_keys",
@@ -65,7 +65,8 @@ class SignSnapshot(Tractor):
     d_i_task_id: str = "Task ID to identify signing request."
     d_i_snapshot_str: str = "Json representation of release snapshot."
     d_i_snapshot_file: str = "Path to a file containing snapshot in json format."
-    d_a_pool_size: str = "Pool size used for STMD tractions"
+    d_a_pool_size: str = "Pool size used for STMD tractions."
+    d_a_executor_type: str = "STMD executor type."
     d_i_signing_key: str = "Signing key used to sign containers. One key per container."
     d_r_signer_wrapper_cosign: str = "Signer wrapper used to sign container images."
     d_r_dst_quay_client: str = (
