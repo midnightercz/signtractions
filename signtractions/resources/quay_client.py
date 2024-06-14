@@ -12,7 +12,7 @@ from .exceptions import ManifestTypeError, RegistryAuthError, ManifestNotFoundEr
 from .quay_session import QuaySession
 from .types import ManifestList, Manifest
 
-from pytractions.base import Base
+from pytractions.base import Base, doc
 
 LOG = logging.getLogger("pubtools.quay")
 
@@ -29,6 +29,10 @@ class QuayClient(Base):
     username: str
     password: str
     host: str
+
+    d_username: str = doc('Username for Quay registry.')
+    d_password: str = doc('Password for Quay registry.')
+    d_host: str = doc('Quay registry hostname.')
 
     def __post_init__(self, *args, **kwargs):
         """Post init for quay client."""
