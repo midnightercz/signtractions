@@ -35,7 +35,7 @@ def get_requirements():
 
 setup(
     name="signtractions",
-    version="0.0.3",
+    version="0.0.4",
     description="quay-tractions",
     long_description="pubtools-sign pytractions wrapper for signing containers and release snapshots in tractions.",
     long_description_content_type="text/x-rst",
