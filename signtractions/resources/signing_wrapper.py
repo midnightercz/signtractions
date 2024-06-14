@@ -1,5 +1,6 @@
 import abc
 from contextlib import contextmanager
+import dataclasses
 import logging
 import pkg_resources
 import tempfile
@@ -9,7 +10,7 @@ from typing import Optional, List, Dict, Any, Tuple, Generator
 
 from marshmallow import Schema
 
-from pytractions.base import Base
+from pytractions.base import Base, doc
 
 from .utils.misc import (
     run_entrypoint,
@@ -42,13 +43,14 @@ class SignerWrapperSettings(Base):
 class SignerWrapper(Base):
     """Wrapper providing functionality to sign containers with a generic signer."""
 
-    label: str = "unused"
-    pre_push: bool = False
+    label: str = dataclasses.field(default="unused", init=False)
+    pre_push: bool = dataclasses.field(default=False, init=False)
     _entry_point_conf = ["signer", "group", "signer"]
     config_file: Optional[str]
     settings: SignerWrapperSettings
-    signing_chunk_size: int = 100
     _ep: Optional[Any] = None
+
+    d_config_file: str = doc("Path to pubtools-sign config file.")
 
     @property
     def entry_point(self) -> Any:
@@ -168,12 +170,17 @@ class MsgSignerSettings(Base):
     pyxis_ssl_key_file: Optional[str]
     num_thread_pyxis: int = 7
 
+    d_pyxis_server: str = doc("Pyxis server URL.")
+    d_pyxis_ssl_crt_file: str = doc("Pyxis SSL client certificate file.")
+    d_pyxis_ssl_key_file: str = doc("Pyxis SSL client key file.")
+    d_num_thread_pyxis: str = doc("Number of threads to use for Pyxis requests.")
+
 
 class MsgSignerWrapper(SignerWrapper):
     """Wrapper for messaging signer functionality."""
 
-    label: str = "msg_signer"
-    pre_push: bool = True
+    label: str = dataclasses.field(default="msg_signer", init=False)
+    pre_push: bool = dataclasses.field(default=True, init=False)
     settings: MsgSignerSettings
 
     _entry_point_conf = ["pubtools-sign", "modules", "pubtools-sign-msg-container-sign"]
@@ -397,18 +404,13 @@ class MsgSignerWrapper(SignerWrapper):
 class CosignSignerSettings(Base):
     """Validation schema for cosign signer settings."""
 
-    quay_namespace: str
-    quay_host: str
-    quay_user: str
-    quay_password: str
-    dest_quay_api_token: str
-
 
 class CosignSignerWrapper(SignerWrapper):
     """Wrapper for cosign signer functionality."""
 
-    label: str = "cosign_signer"
-    pre_push: bool = False
+    label: str = dataclasses.field(default="cosign_signer", init=False)
+    pre_push: bool = dataclasses.field(default=False, init=False)
+    settings: CosignSignerSettings = dataclasses.field(default_factory=CosignSignerSettings)
 
     _entry_point_conf = ["pubtools-sign", "modules", "pubtools-sign-cosign-container-sign"]
 
