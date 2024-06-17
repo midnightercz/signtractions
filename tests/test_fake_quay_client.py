@@ -10,7 +10,7 @@ from signtractions.resources import exceptions
 def test_get_manifest_list_success():
     ml = {
         "schemaVersion": 2,
-        "mediaType": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "mediaType": "application/vnd.docker.distribuytion.manifest.list.v2+json",
         "manifests": [
             {
                 "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
@@ -24,13 +24,13 @@ def test_get_manifest_list_success():
         username="user",
         password="pass",
         host="quay.io",
-        fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
-    )
-    client.populate_manifest(
-        "quay.io/namespace/image:1",
-        "application/vnd.docker.distribution.manifest.list.v2+json",
-        False,
-        json.dumps(ml),
+        fake_manifests=TDict[str, TDict[str, str]].content_from_json(
+            {
+                "quay.io/namespace/image:1": {
+                    "application/vnd.docker.distribution.manifest.list.v2+json": json.dumps(ml)
+                }
+            }
+        ),
     )
     ret_ml = client.get_manifest(
         "quay.io/namespace/image:1",

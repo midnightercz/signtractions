@@ -23,7 +23,7 @@ class FakeQuayClient(QuayClient):
     def __post_init__(self):
         """Fake quay client post init."""
         LOG.info("Populate fake manifests:")
-        for image, media_types in self.fake_manifests:
+        for image, media_types in self.fake_manifests.items():
             LOG.info("Image: {}".format(image))
             for mtype in media_types:
                 LOG.info("\tMedia Type {}".format(mtype))
