@@ -19,7 +19,7 @@ from .utils.misc import (
 from ..models.signing import SignEntry
 
 
-LOG = logging.getLogger("pubtools.quay")
+LOG = logging.getLogger()
 
 
 class SigningError(Exception):
@@ -147,6 +147,7 @@ class SignerWrapper(Base):
             config_file=self.config_file,
             signing_key=sign_entry.signing_key,
             reference=[x.reference for x in sign_entries if x],
+            identity=[x.identity for x in sign_entries if x],
             digest=[x.digest for x in sign_entries if x],
             **opt_args,
         )

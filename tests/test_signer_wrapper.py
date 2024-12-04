@@ -51,6 +51,7 @@ def test_signer_wrapper_sign_containers():
                 SignEntry(
                     repo="containers/podman",
                     reference="quay.io/containers/podman:latest",
+                    identity="quay.io/containers/podman:latest",
                     digest="sha256:123456",
                     arch="amd64",
                     signing_key="signing_key",
@@ -61,6 +62,7 @@ def test_signer_wrapper_sign_containers():
             config_file="",
             signing_key="signing_key",
             reference=["quay.io/containers/podman:latest"],
+            identity=["quay.io/containers/podman:latest"],
             digest=["sha256:123456"],
         )
 
@@ -77,6 +79,7 @@ def test_signer_wrapper_sign_containers_error():
                     SignEntry(
                         repo="containers/podman",
                         reference="quay.io/containers/podman:latest",
+                        identity="quay.io/containers/podman:latest",
                         digest="sha256:123456",
                         arch="amd64",
                         signing_key="signing_key",
@@ -110,6 +113,7 @@ def test_msg_signer_wrapper_sign_containers():
                 SignEntry(
                     repo="containers/podman",
                     reference="quay.io/containers/podman:latest",
+                    identity="quay.io/containers/podman:latest",
                     digest="sha256:123456",
                     arch="amd64",
                     signing_key="signing_key",
@@ -120,6 +124,7 @@ def test_msg_signer_wrapper_sign_containers():
             config_file="",
             signing_key="signing_key",
             reference=["quay.io/containers/podman:latest"],
+            identity=["quay.io/containers/podman:latest"],
             digest=["sha256:123456"],
         )
 
@@ -138,6 +143,7 @@ def test_msg_signer_wrapper_filter_to_sign():
                 SignEntry(
                     repo="containers/podman",
                     reference="quay.io/containers/podman:latest",
+                    identity="quay.io/containers/podman:latest",
                     digest="sha256:123456",
                     arch="amd64",
                     signing_key="signing_key",
@@ -147,6 +153,7 @@ def test_msg_signer_wrapper_filter_to_sign():
             SignEntry(
                 repo="containers/podman",
                 reference="quay.io/containers/podman:latest",
+                identity="quay.io/containers/podman:latest",
                 digest="sha256:123456",
                 arch="amd64",
                 signing_key="signing_key",
@@ -223,6 +230,7 @@ def test_msg_signer_wrapper_filter_to_sign_nothing_to_sign():
                     SignEntry(
                         repo="containers/podman",
                         reference="quay.io/containers/podman:latest",
+                        identity="quay.io/containers/podman:latest",
                         digest="sha256:123456",
                         arch="amd64",
                         signing_key="signing_key",

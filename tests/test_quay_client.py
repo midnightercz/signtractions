@@ -5,6 +5,7 @@ import requests
 import requests.exceptions
 import requests_mock
 
+
 from signtractions.resources import quay_client
 from signtractions.resources import exceptions
 
@@ -697,3 +698,42 @@ def test_get_manifest_digest_unkown_error():
 
         with pytest.raises(requests.exceptions.HTTPError):
             client.get_manifest_digest("quay.io/namespace/image:1")
+
+
+def test_get_quay_repositories():
+    with requests_mock.Mocker() as m:
+        m.get(
+            "https://quay.io/api/v1/repository?namespace=namespace&next_page=",
+            json={"repositories": ["namespace/image1", "namespace/image2"], "next_page": "next-1"},
+        )
+        m.get(
+            "https://quay.io/api/v1/repository?namespace=namespace&next_page=next-1",
+            json={"repositories": ["namespace/image3", "namespace/image4"]},
+        )
+
+        client = quay_client.QuayClient(username="user", password="pass", host="quay.io")
+        repos = client.get_quay_repositories("namespace")
+        assert repos == [
+            "namespace/image1",
+            "namespace/image2",
+            "namespace/image3",
+            "namespace/image4",
+        ]
+        assert m.call_count == 2
+
+
+def test_get_quay_repository_tag():
+    with requests_mock.Mocker() as m:
+        m.get(
+            "https://quay.io/api/v1/repository/repo/tag?page=0",
+            json={"tags": ["t1", "t2"]},
+        )
+        m.get(
+            "https://quay.io/api/v1/repository/repo/tag?page=1",
+            json={"tags": []},
+        )
+
+        client = quay_client.QuayClient(username="user", password="pass", host="quay.io")
+        tags = client.get_quay_repository_tags("repo")
+        assert tags == ["t1", "t2"]
+        assert m.call_count == 2

@@ -1,10 +1,11 @@
 import json
 import pytest
 
-from pytractions.base import TDict
+from pytractions.base import TDict, TList
 
 from signtractions.resources import fake_quay_client
 from signtractions.resources import exceptions
+from signtractions.models.quay import QuayRepo, QuayTag
 
 
 def test_get_manifest_list_success():
@@ -31,6 +32,8 @@ def test_get_manifest_list_success():
                 }
             }
         ),
+        fake_repositories=TDict[str, TDict[str, QuayRepo]].content_from_json({}),
+        fake_tags=TDict[str, TDict[str, TList[QuayTag]]].content_from_json({}),
     )
     ret_ml = client.get_manifest(
         "quay.io/namespace/image:1",
@@ -57,6 +60,8 @@ def test_get_manifest_list_raw_success():
         password="pass",
         host="quay.io",
         fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_repositories=TDict[str, TDict[str, QuayRepo]].content_from_json({}),
+        fake_tags=TDict[str, TDict[str, TList[QuayTag]]].content_from_json({}),
     )
     client.populate_manifest(
         "quay.io/namespace/image:1",
@@ -90,6 +95,8 @@ def test_get_manifest_list_raw_return_headers_success():
         password="pass",
         host="quay.io",
         fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_repositories=TDict[str, TDict[str, QuayRepo]].content_from_json({}),
+        fake_tags=TDict[str, TDict[str, TList[QuayTag]]].content_from_json({}),
     )
     client.populate_manifest(
         "quay.io/namespace/image:1",
@@ -119,6 +126,8 @@ def test_get_manifest_list_wrong_type():
         password="pass",
         host="quay.io",
         fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_repositories=TDict[str, TDict[str, QuayRepo]].content_from_json({}),
+        fake_tags=TDict[str, TDict[str, TList[QuayTag]]].content_from_json({}),
     )
     client.populate_manifest(
         "quay.io/namespace/image:1",
@@ -140,6 +149,8 @@ def test_get_manifest_list_not_found():
         password="pass",
         host="quay.io",
         fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_repositories=TDict[str, TDict[str, QuayRepo]].content_from_json({}),
+        fake_tags=TDict[str, TDict[str, TList[QuayTag]]].content_from_json({}),
     )
     with pytest.raises(exceptions.ManifestNotFoundError):
         client.get_manifest(
@@ -164,6 +175,8 @@ def test_get_manifest_accept_any():
         password="pass",
         host="quay.io",
         fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_repositories=TDict[str, TDict[str, QuayRepo]].content_from_json({}),
+        fake_tags=TDict[str, TDict[str, TList[QuayTag]]].content_from_json({}),
     )
     client.populate_manifest(
         "quay.io/namespace/image:1",
@@ -191,6 +204,8 @@ def test_get_manifest_raw_accept_any_return_headers():
         password="pass",
         host="quay.io",
         fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_repositories=TDict[str, TDict[str, QuayRepo]].content_from_json({}),
+        fake_tags=TDict[str, TDict[str, TList[QuayTag]]].content_from_json({}),
     )
     client.populate_manifest(
         "quay.io/namespace/image:1",
@@ -217,6 +232,8 @@ def test_get_v2s1_manifest_wrong_type():
         password="pass",
         host="quay.io",
         fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_repositories=TDict[str, TDict[str, QuayRepo]].content_from_json({}),
+        fake_tags=TDict[str, TDict[str, TList[QuayTag]]].content_from_json({}),
     )
     client.populate_manifest(
         "quay.io/namespace/image:1",
@@ -253,6 +270,35 @@ def test_upload_manifest_list_success():
         password="pass",
         host="quay.io",
         fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_repositories=TDict[str, TDict[str, QuayRepo]].content_from_json({}),
+        fake_tags=TDict[str, TDict[str, TList[QuayTag]]].content_from_json({}),
+    )
+    client.upload_manifest(ml, "quay.io/namespace/image:1")
+    assert client.fake_manifests["quay.io/namespace/image:1"][
+        "application/vnd.docker.distribution.manifest.list.v2+json"
+    ] == json.dumps(ml, sort_keys=True)
+
+
+def test_upload_manifest_list_raw_success():
+    ml = {
+        "schemaVersion": 2,
+        "mediaType": "application/vnd.docker.distribution.manifest.list.v2+json",
+        "manifests": [
+            {
+                "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+                "size": 429,
+                "digest": "sha256:6d5f4d65fg4d6f54g",
+                "platform": {"architecture": "arm64", "os": "linux"},
+            }
+        ],
+    }
+    client = fake_quay_client.FakeQuayClient(
+        username="user",
+        password="pass",
+        host="quay.io",
+        fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_repositories=TDict[str, TDict[str, QuayRepo]].content_from_json({}),
+        fake_tags=TDict[str, TDict[str, TList[QuayTag]]].content_from_json({}),
     )
     client.upload_manifest(json.dumps(ml, sort_keys=True), "quay.io/namespace/image:1", raw=True)
     assert client.fake_manifests["quay.io/namespace/image:1"][
@@ -278,6 +324,8 @@ def test_upload_raw_manifest_success():
         password="pass",
         host="quay.io",
         fake_manifests=TDict[str, TDict[str, str]].content_from_json({}),
+        fake_repositories=TDict[str, TDict[str, QuayRepo]].content_from_json({}),
+        fake_tags=TDict[str, TDict[str, TList[QuayTag]]].content_from_json({}),
     )
     client.upload_manifest(json.dumps(ml), "quay.io/namespace/image:1", raw=True)
     assert client.fake_manifests["quay.io/namespace/image:1"][

@@ -163,3 +163,13 @@ class QuaySession(object):
                 Bearer token.
         """
         self.session.headers["Authorization"] = "Bearer {0}".format(token)
+
+    def set_quay_auth_token(self, token: str) -> None:
+        """
+        Set a Bearer auth token for the authentication.
+
+        Args:
+            token (str):
+                Bearer token.
+        """
+        self.session.headers["Authorization"] = "Bearer {0}".format(token)

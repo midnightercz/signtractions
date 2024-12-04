@@ -19,11 +19,11 @@ class ReferenceConstructorInternal(ReferenceConstructor):
 
     def construct_reference_tag(self, registry, repo, tag):
         """Construct docker reference for registry repo and tag."""
-        return f"{registry}/{self.quay_org}/{repo.replace('/','----')}:{tag}"
+        return f"{registry}/{self.quay_org}/{repo.replace('/', '----')}:{tag}"
 
     def construct_reference_digest(self, registry, repo, digest):
         """Construct docker reference for registry repo and digest."""
-        return f"{registry}/{self.quay_org}/{repo.replace('/','----')}@{digest}"
+        return f"{registry}/{self.quay_org}/{repo.replace('/', '----')}@{digest}"
 
 
 class ReferenceConstructorExternal(ReferenceConstructor):

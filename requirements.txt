@@ -3,6 +3,6 @@ paramiko
 pubtools
 pubtools-pyxis
 pubtools-sign
-pytractions
+pytractions @ git+https://github.com/midnightercz/pytractions.git
 requests
 urllib3<2.0.0

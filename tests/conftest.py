@@ -2,6 +2,12 @@ import pytest
 
 import tempfile
 
+from pytractions.base import TList, TDict
+from signtractions.resources.fake_signing_wrapper import FakeCosignSignerWrapper, FakeEPRunArgs
+from signtractions.resources.signing_wrapper import CosignSignerSettings
+
+from signtractions.models.quay import QuayTag
+
 
 @pytest.fixture
 def fix_manifest_v2s2():
@@ -128,3 +134,59 @@ def fix_snapshot_file():
         )
         f.flush()
         yield f.name
+
+
+@pytest.fixture
+def fix_quay_tag1():
+    return QuayTag(
+        name="t1",
+        reversion=False,
+        start_ts=0,
+        manifest_digest="sha256:123456",
+        is_manifest_list=False,
+        size=None,
+        last_modified="",
+        end_ts=0,
+        expiration=None,
+    )
+
+
+@pytest.fixture
+def fix_quay_tag2():
+    return QuayTag(
+        name="t2",
+        reversion=False,
+        start_ts=0,
+        manifest_digest="sha256:456789",
+        is_manifest_list=False,
+        size=None,
+        last_modified="",
+        end_ts=0,
+        expiration=None,
+    )
+
+
+@pytest.fixture
+def fix_quay_tag_sbom():
+    return QuayTag(
+        name="t2.sbom",
+        reversion=False,
+        start_ts=0,
+        manifest_digest="sha256:456789",
+        is_manifest_list=False,
+        size=None,
+        last_modified="",
+        end_ts=0,
+        expiration=None,
+    )
+
+
+@pytest.fixture
+def fake_cosign_wrapper():
+    return FakeCosignSignerWrapper(
+        config_file="test",
+        settings=CosignSignerSettings(),
+        fake_entry_point_requests=TList[FakeEPRunArgs]([]),
+        fake_entry_point_returns=TList[TDict[str, TDict[str, str]]]([]),
+        fake_entry_point_runs=TList[FakeEPRunArgs]([]),
+    )

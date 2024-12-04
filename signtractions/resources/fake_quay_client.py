@@ -2,11 +2,11 @@ from typing import cast
 import json
 import logging
 
-from pytractions.base import TDict, doc
+from pytractions.base import TDict, TList, doc
 
 from .quay_client import QuayClient, ManifestTypeError, ManifestNotFoundError
-
 from .types import ManifestList, Manifest
+from ..models.quay import QuayRepo, QuayTag
 
 
 LOG = logging.getLogger()
@@ -18,6 +18,9 @@ class FakeQuayClient(QuayClient):
     """Class for performing Docker HTTP API operations with the Quay registry."""
 
     fake_manifests: TDict[str, TDict[str, str]]
+    fake_repositories: TDict[str, TDict[str, QuayRepo]]
+    fake_tags: TDict[str, TDict[str, TList[QuayTag]]]
+
     d_fake_manifests: str = doc("Fake manifests for testing.")
 
     def __post_init__(self):
@@ -32,6 +35,24 @@ class FakeQuayClient(QuayClient):
         """Populate fake quay client with manifest for given media_type."""
         self.fake_manifests.setdefault(image, TDict[str, str]({}))
         self.fake_manifests[image][media_type] = manifest
+
+    def populate_repository(self, namespace: str, repository: str, repo_data: QuayRepo):
+        """Populate fake quay client with repository."""
+        self.fake_repositories.setdefault(namespace, TDict[str, QuayRepo]({}))[
+            repository
+        ] = repo_data
+
+    def populate_tags(self, namespace: str, repository: str, tags: TList[QuayTag]):
+        """Populate fake quay client with tag."""
+        self.fake_tags.setdefault(namespace, TDict[str, TList[QuayTag]]({})).setdefault(
+            repository, TList[QuayTag]([])
+        ).extend(tags)
+
+    def get_repositories(self, namespace: str) -> TList[QuayRepo]:
+        """Get list of repositories for given namespace."""
+        return TList[QuayRepo](
+            [repo for repo in self.fake_repositories.get(namespace, {}).values()]
+        )
 
     def get_manifest(
         self,
@@ -126,5 +147,15 @@ class FakeQuayClient(QuayClient):
         else:
             manifest_type = cast(ManifestList, manifest).get("mediaType", self._MANIFEST_V2S1_TYPE)
             self.fake_manifests.setdefault(image, TDict[str, str]({}))[manifest_type] = json.dumps(
-                manifest
+                manifest, sort_keys=True
             )
+
+    def get_repository_tags(self, repository: str):
+        """Get list of tags for given repository."""
+        namespace, repository = repository.split("/")
+        return {"tags": [tag.name for tag in self.fake_tags.get(namespace, {}).get(repository, [])]}
+
+    def get_quay_repository_tags(self, repository: str) -> TList[QuayTag]:
+        """Get list of tags for given repository."""
+        namespace, repository = repository.split("/")
+        return TList[QuayTag](self.fake_tags.get(namespace, {}).get(repository, []))

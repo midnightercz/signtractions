@@ -6,7 +6,7 @@ import re
 from urllib3.util.retry import Retry
 from urllib import request
 import threading
-from typing import Any, cast, Dict, List
+from typing import Any, cast, Dict, List, Optional
 
 from .exceptions import ManifestTypeError, RegistryAuthError, ManifestNotFoundError
 from .quay_session import QuaySession
@@ -14,7 +14,8 @@ from .types import ManifestList, Manifest
 
 from pytractions.base import Base, doc
 
-LOG = logging.getLogger("pubtools.quay")
+
+LOG = logging.getLogger("signtractions.resources.quay_client")
 
 
 class QuayClient(Base):
@@ -29,6 +30,7 @@ class QuayClient(Base):
     username: str
     password: str
     host: str
+    token: Optional[str] = None
 
     d_username: str = doc("Username for Quay registry.")
     d_password: str = doc("Password for Quay registry.")
@@ -43,6 +45,13 @@ class QuayClient(Base):
         """Create QuaySession object per thread."""
         if not hasattr(self._thread_local, "session"):
             self._thread_local.session = QuaySession(hostname=self.host, api="docker")
+        return self._thread_local.session
+
+    @property
+    def quay_session(self) -> Any | QuaySession:
+        """Create QuaySession object per thread."""
+        if not hasattr(self._thread_local, "session"):
+            self._thread_local.session = QuaySession(hostname=self.host, api="quay")
         return self._thread_local.session
 
     def get_manifest(
@@ -245,7 +254,29 @@ class QuayClient(Base):
 
         r = self.session.request(method, endpoint, **kwargs)
         r.raise_for_status()
+        return r
 
+    def _request_quay_oauth(
+        self, method: str, endpoint: str, kwargs: dict[Any, Any] = {}, token: Optional[str] = None
+    ) -> requests.Response:
+        """
+        Perform a Docker HTTP API request on Quay registry. Handle authentication.
+
+        Args:
+            method (str):
+                REST API method of the request (GET, POST, PUT, DELETE).
+            endpoint (str):
+                Endpoint of the request.
+            kwargs (dict):
+                Optional arguments to add to the Request object.
+        Returns (Response):
+            Request library's Response object.
+        Raises:
+            HTTPError: When the request returned an error status.
+        """
+        self.quay_session.set_quay_auth_token(token)
+        r = self.quay_session.request(method, endpoint, **kwargs)
+        r.raise_for_status()
         return r
 
     def _authenticate_quay(
@@ -326,3 +357,55 @@ class QuayClient(Base):
         # Skip base URL and get last part of URL without reference
         repo = "/".join(url_parts[1:-1] + [remainder])
         return (repo, ref)
+
+    def get_quay_repositories(self, namespace):
+        """
+        Get all repositories in a namespace.
+
+        Args:
+            namespace (str):
+                Namespace to get repositories from.
+        Returns (list):
+            List of repositories in the namespace.
+        """
+        next_page = ""
+        endpoint = f"repository?namespace={namespace}&next_page={next_page}"
+        # kwargs = {"data": {"namespace": namespace}}
+        kwargs = {"data": {}}
+        repos = []
+        while True:
+            response = self._request_quay_oauth("GET", endpoint, token=self.token, kwargs=kwargs)
+            ret = response.json()
+            repos.extend(ret["repositories"])
+            if "next_page" not in ret or not ret["next_page"]:
+                break
+            next_page = ret["next_page"]
+            endpoint = f"repository?namespace={namespace}&next_page={next_page}"
+            # kwargs["data"]["next_page"] = ret["next_page"]
+        return repos
+
+    def get_quay_repository_tags(self, repo):
+        """
+        Get all tags for a repository.
+
+        Args:
+            repo (str):
+                Repository to get tags from.
+        Returns (list):
+            List of tags in the repository.
+        """
+        page = 0
+        # endpoint = f"repository/{repo}/tag?page={page}"
+        # kwargs = {"data": {"page": page}}
+        kwargs = {}
+        tags = []
+        while True:
+            endpoint = f"repository/{repo}/tag?page={page}"
+            response = self._request_quay_oauth("GET", endpoint, token=self.token, kwargs=kwargs)
+            ret = response.json()
+            if not ret["tags"]:
+                break
+            tags.extend(ret["tags"])
+            # kwargs['data']["page"] += 1
+            page += 1
+        return tags

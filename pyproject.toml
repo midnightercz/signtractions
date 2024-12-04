@@ -1,5 +1,5 @@
 [build-system]
 requires = [
- 	"pytractions",
+ 	"pytractions @ git+https://github.com/midnightercz/pytractions.git@main",
 	"setuptools >= 61.0"
 ]

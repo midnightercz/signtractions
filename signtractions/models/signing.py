@@ -14,8 +14,9 @@ class SignEntry(Base):
         arch (str): Architecture of the manifest.
     """
 
-    repo: str
-    reference: Optional[str]
-    digest: str
-    signing_key: str
-    arch: str
+    repo: str = ""
+    reference: Optional[str] = ""
+    digest: str = ""
+    signing_key: str = ""
+    arch: str = ""
+    identity: Optional[str] = ""
