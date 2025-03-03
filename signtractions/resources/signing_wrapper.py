@@ -8,8 +8,6 @@ import json
 
 from typing import Optional, List, Dict, Any, Tuple, Generator
 
-from marshmallow import Schema
-
 from pytractions.base import Base, doc
 
 from .utils.misc import (
@@ -28,10 +26,6 @@ class SigningError(Exception):
     pass
 
 
-class NoSchema(Schema):
-    """Schema that does not validate anything."""
-
-    pass
 
 
 class SignerWrapperSettings(Base):

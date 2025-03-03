@@ -1,5 +1,8 @@
 pytest
 pytest-cov
+requests
 requests_mock
 pubtools-pyxis
 pubtools-sign
+google-api-python-client
+google_auth_oauthlib
