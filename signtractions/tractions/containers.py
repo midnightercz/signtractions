@@ -160,10 +160,12 @@ class PopulateContainerDigest(Traction):
             image=self.i_container_parts.image,
             tag=self.i_container_parts.tag,
         )
+        print("O CONTAINER PARTS", self.o_container_parts)
         if manifest["mediaType"] in (
             QuayClient._MANIFEST_LIST_TYPE,
             QuayClient._MANIFEST_OCI_LIST_TYPE,
         ):
+            print("- ML -")
             for _manifest in manifest["manifests"]:
                 self.o_container_parts.digests.append(_manifest["digest"])
                 self.o_container_parts.arches.append(_manifest["platform"]["architecture"])
@@ -175,6 +177,7 @@ class PopulateContainerDigest(Traction):
             self.o_container_parts.arches.append("multiarch")
 
         else:
+            print("- SINGLE -")
             hasher = hashlib.sha256()
             hasher.update(manifest_str.encode("utf-8"))
             digest = hasher.hexdigest()

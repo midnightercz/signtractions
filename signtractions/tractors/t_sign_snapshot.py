@@ -78,3 +78,5 @@ class SignSnapshot(Tractor):
     d_t_container_images_from_snapshot: str = "Extract container images from snapshot."
     d_t_populate_signing_keys: str = "Populate signing keys for each container image."
     d_t_sign_containers: str = "Sign containers in release snapshot."
+    d_i_chunk_size: str = "Chunk size for parallel processing."
+    d_o_sign_entries: str = "List of SignEntry objects representing signed containers."

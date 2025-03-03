@@ -3,6 +3,9 @@ paramiko
 pubtools
 pubtools-pyxis
 pubtools-sign
-pytractions @ git+https://github.com/midnightercz/pytractions.git
+pytractions >= 0.0.7
 requests
 urllib3<2.0.0
+google-api-python-client
+google_auth_oauthlib
+google-auth

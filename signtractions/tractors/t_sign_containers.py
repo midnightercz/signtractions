@@ -27,18 +27,12 @@ class ChunkSignEntries(Traction):
     d_: str = "Chunk provided SignEntries into chunks."
     d_i_sign_entries: str = "List of SignEntry objects to chunk."
     d_i_chunk_size: str = "Size of each chunk."
+    d_o_chunked_sign_entries: str = "List of chunked SignEntry objects."
 
     def _run(self, on_update=None) -> None:
         for i in range(0, len(self.i_sign_entries), self.i_chunk_size):
             chunk = TList[SignEntry](self.i_sign_entries[i : i + self.i_chunk_size])  # noqa: E203
             self.o_chunked_sign_entries.append(chunk)
-
-        # self.o_chunked_sign_entries = TList[TList[SignEntry]](
-        #     [
-        #         TList[SignEntry](chunk)
-        #         for i in range(0, len(self.i_sign_entries), self.i_chunk_size)
-        #     ]
-        # )
 
 
 class SignContainers(Tractor):
@@ -111,3 +105,7 @@ class SignContainers(Tractor):
     d_i_container_image_identities: str = "List of container image identities."
     d_i_signing_keys: str = "List of signing keys used to sign containers. One key per container."
     d_a_executor: str = "Executor used for parallel processing."
+    d_i_chunk_size: str = "Size of each chunk used to split sign entries to chunks for parallel signing."
+    d_o_sign_entries: str = "List of SignEntry objects signed."
+    d_r_signer_wrapper_cosign: str = "Signer wrapper used to sign container images with cosign."
+    d_a_dry_run: str = "Dry run flag to simulate signing without actual signing."

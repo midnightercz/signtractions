@@ -123,7 +123,7 @@ class FakeQuayClient(QuayClient):
                     else:
                         return json.loads(self.fake_manifests[image][manifest_type])
             else:
-                raise ManifestNotFoundError()
+                raise ManifestNotFoundError(image)
 
     def upload_manifest(self, manifest: ManifestList | str, image: str, raw: bool = False) -> None:
         """

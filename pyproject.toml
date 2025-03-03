@@ -1,5 +1,36 @@
 [build-system]
-requires = [
- 	"pytractions @ git+https://github.com/midnightercz/pytractions.git@main",
-	"setuptools >= 61.0"
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "signtractions"
+version = "0.0.5"
+description = "signtractions"
+readme = "README.rst"
+authors = [
+    { name = "Jindrich Luza", email = "jluza@redhat.com" }
 ]
+license = { text = "LGPL-3.0-only" }
+requires-python = ">=3.6"
+dependencies = [
+    "koji",
+    "requests",
+    "requests_kerberos",
+    "pytractions",
+    "gssapi",
+    "google-api-python-client",
+    "google_auth_oauthlib",
+]
+dynamic=["entry-points"]
+
+[project.urls]
+Homepage = "https://github.com/midnightercz/signtractions"
+
+[tool.setuptools]
+package-dir = {"" = "signtractions"}
+
+[tool.setuptools.dynamic]
+entry-points = { file = "signtractions/entry_points.txt" }
+
+[tool.setuptools.package-data]
+"*" = ["*.txt", "*.rst"]

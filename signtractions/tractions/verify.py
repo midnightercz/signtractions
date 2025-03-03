@@ -1,17 +1,13 @@
 import logging
+from typing import Union
 
-from pytractions.base import (
-    Traction,
-    OnUpdateCallable,
-    TList,
-    TDict
-)
+from pytractions.base import Traction, OnUpdateCallable, TList, TDict
 
 import subprocess
 
 from ..models.signing import SignEntry
-from ..resources.quay_client import QuayClient
 from ..resources.sigstore import Sigstore
+from ..resources.fake_sigstore import FakeSigstore
 
 
 LOG = logging.getLogger()
@@ -21,9 +17,15 @@ LOG.setLevel(logging.INFO)
 
 class VerifyEntriesLegacy(Traction):
     """Sign SignEntries."""
+
     i_sign_entries: TList[SignEntry]
-    r_sigstore: Sigstore
+    r_sigstore: Union[Sigstore, FakeSigstore]
     o_verified: TDict[SignEntry, bool]
+
+    d_: str = """Verify SignEntries have signatures in the legacy sigstore."""
+    d_i_sign_entries: str = "List of SignEntries to verify"
+    d_r_sigstore: str = "Sigstore resource"
+    d_o_verified: str = "Dictionary of SignEntry to verification status"
 
     def _run(self, on_update: OnUpdateCallable = None) -> None:
         for entry in self.i_sign_entries:
@@ -32,12 +34,12 @@ class VerifyEntriesLegacy(Traction):
             image_tag = entry.identity.split("/", 1)[-1]
             image = image_tag.split(":")[0]
 
-            LOG.info(f"Legacy: Verifying {entry.reference}")
+            self.log.info(f"Legacy: Verifying {entry.reference}")
 
             signatures = self.r_sigstore.get_signatures(image, entry.digest)
             found = False
             for signature in signatures:
-                if signature["critical"]['identity']['docker-reference'] == entry.identity:
+                if signature.critical.identity.docker_reference == entry.identity:
                     found = True
                     break
             self.o_verified[entry] = found
@@ -45,24 +47,19 @@ class VerifyEntriesLegacy(Traction):
 
 class VerifyEntriesCosign(Traction):
     """Sign SignEntries."""
+
     i_sign_entries: TList[SignEntry]
     i_public_key_file: str
-    r_dst_quay_client: QuayClient
     o_verified: TDict[SignEntry, bool]
 
+    d_: str = """Verify SignEntries have signatures in the cosign sigstore."""
+    d_i_sign_entries: str = "List of SignEntries to verify"
+    d_i_public_key_file: str = "Public key file"
+    d_o_verified: str = "Dictionary of SignEntry to verification status"
+
     def _run(self, on_update: OnUpdateCallable = None) -> None:
-        deduplicated_sign_entries = []
-        references = []
-        # for entry in self.i_sign_entries:
-        #     if entry.reference not in references:
-        #         references.append(entry.reference)
-        #         deduplicated_sign_entries.append(entry)
-
-        username = self.r_dst_quay_client.username
-        password = self.r_dst_quay_client.password
-
         for entry in self.i_sign_entries:
-            LOG.info(f"Cosign: Verifying {entry.reference} {entry.digest}")
+            self.log.info(f"Cosign: Verifying {entry.reference} {entry.digest}")
             p = subprocess.Popen(
                 ["cosign", "verify", "--key", self.i_public_key_file, entry.reference],
                 stdout=subprocess.PIPE,
@@ -70,13 +67,12 @@ class VerifyEntriesCosign(Traction):
             )
             stdout, stderr = p.communicate()
             if p.returncode != 0:
-                print(f"Error verifying {entry.reference} {entry.digest}", stdout, stderr)
+                self.log.error(f"Error verifying {entry.reference} {entry.digest}")
                 self.o_verified[entry] = False
-                print("Verificaiton failed")
-                print(stdout)
-                print(stderr)
+                self.log.error("Verificaiton failed")
+                self.log.error("STDOUT:")
+                self.log.error(stdout)
+                self.log.error("STDERR:")
+                self.log.error(stderr)
             else:
                 self.o_verified[entry] = True
-        print("Cosign verification done")
-        for entry, verified in self.o_verified.items():
-            print(f"{entry.reference} verified: {verified}")
