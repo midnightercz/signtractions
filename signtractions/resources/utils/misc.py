@@ -4,7 +4,10 @@ from dataclasses import dataclass, field
 from io import StringIO
 import logging
 import os
-import pkg_resources
+
+# import pkg_resources
+import importlib
+import importlib.metadata
 import textwrap
 from typing import Iterable, Any, Dict, Generator, Tuple, Optional, List, Callable
 import sys
@@ -70,7 +73,10 @@ def setup_entry_point_cli(
         # this value is probably meaningless.
         for key in environ_vars:
             os.environ[key] = environ_vars[key]
-        entry_point_func = pkg_resources.load_entry_point(*entry_tuple)
+        entry_point_func = list(
+            importlib.metadata.entry_points(group=entry_tuple[1], name=entry_tuple[2])
+        )[0].load()
+
         if args:
             func_args = [name]
             func_args.extend(args)
@@ -126,7 +132,10 @@ def run_entrypoint(
 
 def run_entrypoint_mod(entry_tuple: tuple[str, str, str], name: str, args: list[str]) -> Any:
     """Run entrypoint as python module function."""
-    entry_point_func = pkg_resources.load_entry_point(*entry_tuple)
+    entry_point_func = list(
+        importlib.metadata.entry_points(group=entry_tuple[1], name=entry_tuple[2])
+    )[0].load()
+    print("RUN ENTRYPOINT MOD", entry_point_func, args)
     pyret = entry_point_func(*args)
 
     return pyret
