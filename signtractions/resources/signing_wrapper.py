@@ -2,30 +2,28 @@ import abc
 from contextlib import contextmanager
 import dataclasses
 import logging
-import pkg_resources
+import importlib
 import tempfile
 import json
 
-from typing import Optional, List, Dict, Any, Tuple, Generator
+from typing import Optional, List, Dict, Any, Tuple, Generator, Literal
 
-from pytractions.base import Base, doc
+from pytractions.base import Base
+from pytractions.utils import doc
 
 from .utils.misc import (
     run_entrypoint,
-    run_entrypoint_mod,
 )
 from ..models.signing import SignEntry
 
 
-LOG = logging.getLogger()
+LOG = logging.getLogger("signing_wrapper")
 
 
 class SigningError(Exception):
     """Error raised when signing fails."""
 
     pass
-
-
 
 
 class SignerWrapperSettings(Base):
@@ -40,7 +38,7 @@ class SignerWrapper(Base):
     label: str = dataclasses.field(default="unused", init=False)
     pre_push: bool = dataclasses.field(default=False, init=False)
     _entry_point_conf = ["signer", "group", "signer"]
-    config_file: Optional[str]
+    config_file: Optional[str] = "/etc/pubtools-sign/config.json"
     settings: SignerWrapperSettings
     _ep: Optional[Any] = None
 
@@ -50,7 +48,11 @@ class SignerWrapper(Base):
     def entry_point(self) -> Any:
         """Load and return entry point for pubtools-sign project."""
         if self._ep is None:
-            self._ep = pkg_resources.load_entry_point(*self._entry_point_conf)
+            self._ep = list(
+                importlib.metadata.entry_points(
+                    group=self._entry_point_conf[1], name=self._entry_point_conf[2]
+                )
+            )[0].load()
         return self._ep
 
     def remove_signatures(
@@ -115,6 +117,23 @@ class SignerWrapper(Base):
         """
         return to_sign_entries  # pragma: no cover
 
+    def _sign_entries(self, sign_entries, task_id: Optional[str] = None):
+        if not sign_entries:
+            return {}
+        sign_entry = sign_entries[0]
+        opt_args = self.sign_container_opt_args(sign_entry, task_id)
+
+        signed = self.entry_point(
+            config_file=self.config_file,
+            signing_key=sign_entry.signing_key,
+            reference=[x.reference for x in sign_entries if x],
+            digest=[x.digest for x in sign_entries if x],
+            **opt_args,
+        )
+        if signed["signer_result"]["status"] != "ok":
+            raise SigningError(signed["signer_result"]["error_message"])
+        return signed
+
     def sign_containers(
         self,
         sign_entries: List[SignEntry],
@@ -126,28 +145,28 @@ class SignerWrapper(Base):
             sign_entries (List[SignEntry]): Chunk of SignEntry to sign.
             task_id (str): Task ID to identify the signing task if needed.
         """
-        for sign_entry in sign_entries:
+        filtered_sign_entries = self._filter_to_sign(sign_entries)
+        # filtered_sign_entries = sign_entries
+
+        for sign_entry in filtered_sign_entries:
+            print(
+                "Signing container %s %s %s",
+                sign_entry.reference,
+                sign_entry.digest,
+                sign_entry.signing_key,
+            )
             LOG.info(
                 "Signing container %s %s %s",
                 sign_entry.reference,
                 sign_entry.digest,
                 sign_entry.signing_key,
             )
-        if not sign_entries:
+        if not filtered_sign_entries:
             return
-        sign_entry = sign_entries[0]
-        opt_args = self.sign_container_opt_args(sign_entry, task_id)
-        signed = self.entry_point(
-            config_file=self.config_file,
-            signing_key=sign_entry.signing_key,
-            reference=[x.reference for x in sign_entries if x],
-            identity=[x.identity for x in sign_entries if x],
-            digest=[x.digest for x in sign_entries if x],
-            **opt_args,
-        )
-        if signed["signer_result"]["status"] != "ok":
-            raise SigningError(signed["signer_result"]["error_message"])
-        for sign_entry in sign_entries:
+
+        signed = self._sign_entries(filtered_sign_entries, task_id)
+
+        for sign_entry in filtered_sign_entries:
             LOG.info(
                 "Signed %s(%s) with %s in %s",
                 sign_entry.reference,
@@ -155,6 +174,7 @@ class SignerWrapper(Base):
                 sign_entry.signing_key,
                 self.label,
             )
+        self._store_signed(signed)
 
 
 class MsgSignerSettings(Base):
@@ -163,18 +183,20 @@ class MsgSignerSettings(Base):
     pyxis_server: str
     pyxis_ssl_crt_file: Optional[str]
     pyxis_ssl_key_file: Optional[str]
+    pyxis_ca_file: Optional[str]
     num_thread_pyxis: int = 7
 
     d_pyxis_server: str = doc("Pyxis server URL.")
     d_pyxis_ssl_crt_file: str = doc("Pyxis SSL client certificate file.")
     d_pyxis_ssl_key_file: str = doc("Pyxis SSL client key file.")
+    d_pyxis_ssl_ca_file: str = doc("Pyxis SSL Certificate Authority file.")
     d_num_thread_pyxis: str = doc("Number of threads to use for Pyxis requests.")
 
 
 class MsgSignerWrapper(SignerWrapper):
     """Wrapper for messaging signer functionality."""
 
-    label: str = dataclasses.field(default="msg_signer", init=False)
+    label: Literal["msg_signer"]
     pre_push: bool = dataclasses.field(default=True, init=False)
     settings: MsgSignerSettings
 
@@ -184,13 +206,25 @@ class MsgSignerWrapper(SignerWrapper):
     def _filter_to_sign(self, to_sign_entries: List[SignEntry]) -> List[SignEntry]:
         to_sign_digests = [x.digest for x in to_sign_entries]
         existing_signatures = [esig for esig in self._fetch_signatures(to_sign_digests)]
+        print(existing_signatures)
+        LOG.info("Existing signatures: %d", len(existing_signatures))
         existing_signatures_drk = {
             (x["manifest_digest"], x["reference"], x["sig_key_id"]) for x in existing_signatures
         }
         ret = []
         for tse in to_sign_entries:
-            if (tse.digest, tse.reference, tse.signing_key) not in existing_signatures_drk:
+            if (
+                tse.digest,
+                tse.reference,
+                tse.signing_key,
+            ) not in existing_signatures_drk:
+                LOG.info(f"Adding entry to sign {tse.digest}, {tse.reference}, {tse.signing_key}")
                 ret.append(tse)
+            else:
+                LOG.info(
+                    f"Found existing signature {tse.digest} {tse.reference}, {tse.signing_key}"
+                )
+        LOG.info("New signatures to be signed: %d", len(ret))
         return ret
 
     def sign_container_opt_args(
@@ -231,11 +265,6 @@ class MsgSignerWrapper(SignerWrapper):
         chunk_size = self.MAX_MANIFEST_DIGESTS_PER_SEARCH_REQUEST
         manifest_digests = [x for x in sorted(list(set(manifest_digests))) if x]
 
-        args = ["--pyxis-server", self.settings.pyxis_server]
-        args += ["--pyxis-ssl-crtfile", cert]
-        args += ["--pyxis-ssl-keyfile", key]
-        args += ["--request-threads", str(self.settings.num_thread_pyxis or 7)]
-
         for chunk_start in range(0, len(manifest_digests), chunk_size):
             chunk = manifest_digests[chunk_start : chunk_start + chunk_size]  # noqa: E203
 
@@ -251,9 +280,9 @@ class MsgSignerWrapper(SignerWrapper):
                     signature_fetch_file.flush()
                     args += ["--manifest-digest", "@{0}".format(signature_fetch_file.name)]
 
-                env_vars: dict[Any, Any] = {}
+                env_vars: dict[Any, Any] = {"REQUESTS_CA_BUNDLE": self.settings.pyxis_ca_file}
                 chunk_results = run_entrypoint(
-                    ("pubtools-pyxis", "console_scripts", "pubtools-pyxis-get-signatures"),
+                    ("pubtools-pyxis", "mod", "pubtools-pyxis-get-signatures"),
                     "pubtools-pyxis-get-signatures",
                     args,
                     env_vars,
@@ -280,7 +309,13 @@ class MsgSignerWrapper(SignerWrapper):
                 Dictionary of {"signer_result":..., "operation_results":..., "signing_key":...}"}
                 holding signed manifest claims data
         """
-        LOG.info("Sending new signatures to Pyxis")
+        if not signed_results:
+            LOG.info("Nothing to store. Skipping")
+            return
+
+        LOG.info(
+            f"Sending new {len(signed_results['operation']['references'])} signatures to Pyxis"
+        )
 
         signatures: List[Dict[str, Any]] = []
         for reference, op_res in zip(
@@ -310,6 +345,7 @@ class MsgSignerWrapper(SignerWrapper):
         args += ["--pyxis-ssl-crtfile", cert]
         args += ["--pyxis-ssl-keyfile", key]
         args += ["--request-threads", str(self.settings.num_thread_pyxis or 7)]
+        # args += ["--pyxis-krb-principal", "jluza@IPA.REDHAT.COM"]
 
         LOG.info("upload signature ARGS: %s", args)
         with self._save_signatures_file(signatures) as signature_file:
@@ -317,12 +353,11 @@ class MsgSignerWrapper(SignerWrapper):
 
             args += ["--signatures", "@{0}".format(signature_file.name)]
             LOG.info("Uploading {0} new signatures".format(len(signatures)))
-            env_vars: dict[Any, Any] = {}
-            run_entrypoint_mod(
+            run_entrypoint(
                 ("pubtools-pyxis", "console_scripts", "pubtools-pyxis-upload-signatures"),
                 "pubtools-pyxis-upload-signature",
                 args,
-                env_vars,
+                environ_vars={},  # "REQUESTS_CA_BUNDLE": self.settings.pyxis_ca_file},
             )
 
     def _run_remove_signatures(self, signatures_to_remove: List[str]) -> None:
@@ -403,11 +438,34 @@ class CosignSignerSettings(Base):
 class CosignSignerWrapper(SignerWrapper):
     """Wrapper for cosign signer functionality."""
 
-    label: str = dataclasses.field(default="cosign_signer", init=False)
+    label: Literal["cosign_signer"]
     pre_push: bool = dataclasses.field(default=False, init=False)
     settings: CosignSignerSettings = dataclasses.field(default_factory=CosignSignerSettings)
 
     _entry_point_conf = ["pubtools-sign", "modules", "pubtools-sign-cosign-container-sign"]
+
+    def sign_container_opt_args(
+        self, sign_entry: SignEntry, task_id: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """Return optional arguments for signing a container.
+
+        Args:
+            sign_entry (SignEntry): SignEntry to sign.
+            task_id (str): Task ID to identify the signing task if needed.
+
+        Returns:
+            dict: Optional arguments for signing a container.
+        """
+        return {k: v for k, v in [("identity", sign_entry.identity)] if v is not None}
+
+
+class HVaultSignerWrapper(MsgSignerWrapper):
+    """Wrapper for cosign signer functionality."""
+
+    label: Literal["hvault_signer"]
+    pre_push: bool = dataclasses.field(default=False, init=False)
+
+    _entry_point_conf = ["pubtools-sign", "modules", "pubtools-sign-hvault-container-sign"]
 
 
 SIGNER_BY_LABEL = {
