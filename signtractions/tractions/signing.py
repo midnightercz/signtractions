@@ -1,44 +1,103 @@
-import logging
 from typing import Type, Union
+import json
 
-from pytractions.base import (
-    Traction,
-    OnUpdateCallable,
-    TList,
-)
-from pytractions.stmd import STMD, STMDSingleIn
+from pytractions.base import TList, NullPort, Port, STMDSingleIn
+from pytractions.traction import Traction
+from pytractions.tractor import Tractor
 
-from ..resources.signing_wrapper import SignerWrapper
+from pytractions.stmd import STMD
+
+from ..resources import SIGNING_WRAPPERS
 from ..resources.cosign import CosignClient, FakeCosignClient
 from ..models.signing import SignEntry
 from ..models.containers import ContainerParts
 
-LOG = logging.getLogger()
-logging.basicConfig()
-LOG.setLevel(logging.INFO)
+
+class FilterToSignEntries(Traction):
+    """Filter SignEntries."""
+
+    r_signer_wrapper: Port[SIGNING_WRAPPERS]
+
+    i_sign_entries: TList[SignEntry]
+    o_sign_entries: TList[SignEntry]
+
+    d_: str = "Remove SignEntries that already exists in the sigstore."
+    d_i_sign_entries: str = "List of SignEntry objects to filter."
+    d_o_sign_entries: str = "List of filtered SignEntry objects."
+
+    def _run(self) -> None:
+        # self.o_sign_entries = self.i_sign_entries
+        filtered_sign_entries = self.r_signer_wrapper._filter_to_sign(self.i_sign_entries)
+        for entry in filtered_sign_entries:
+            self.o_sign_entries.append(entry)
 
 
-class SignSignEntries(Traction):
+class SignEntries(Traction):
+    """Sign entries."""
+
+    i_sign_entries: TList[SignEntry]
+    i_task_id: int
+    r_signer_wrapper: Port[SIGNING_WRAPPERS]
+    o_signed: str
+    a_dry_run: Port[bool] = Port[bool](data=False)
+
+    def _run(self):
+        if not self.a_dry_run:
+            self.log.info(f"Signing {len(self.i_sign_entries)} entries")
+            signed = self.r_signer_wrapper._sign_entries(self.i_sign_entries, self.i_task_id)
+            self.o_signed = json.dumps(signed)
+        else:
+            self.log.info(f"[DRY RUN] Signing {len(self.i_sign_entries)} entries")
+            self.o_signed = "{}"
+
+
+class StoreSigned(Traction):
+    """Store signed entries to sigstore."""
+
+    i_signed: str
+    r_signer_wrapper: Port[SIGNING_WRAPPERS]
+    a_dry_run: bool = False
+
+    def _run(self):
+        if not self.a_dry_run:
+            try:
+                self.r_signer_wrapper._store_signed(json.loads(self.i_signed))
+            except Exception:
+                self.log.error("Exception when storing signatures:", exc_info=True)
+                raise
+        else:
+            self.log.info(f"DRY RUN: {self.uid}")
+
+
+class SignSignEntries(Tractor):
     """Sign SignEntries."""
 
-    r_signer_wrapper: SignerWrapper
-    i_task_id: int
-    i_sign_entries: TList[SignEntry]
-    a_dry_run: bool = False
+    r_signer_wrapper: Port[SIGNING_WRAPPERS] = NullPort[SIGNING_WRAPPERS]()
+    i_task_id: int = NullPort[int]()
+    i_sign_entries: Port[TList[SignEntry]] = NullPort[TList[SignEntry]]()
+    a_dry_run: Port[bool] = Port[bool](data=False)
+
+    t_filter_to_sign: FilterToSignEntries = FilterToSignEntries(
+        uid="filter_to_sign",
+        r_signer_wrapper=r_signer_wrapper,
+        i_sign_entries=i_sign_entries,
+    )
+    t_sign_entries: SignEntries = SignEntries(
+        uid="sign_entries",
+        i_sign_entries=t_filter_to_sign.o_sign_entries,
+        i_task_id=i_task_id,
+        r_signer_wrapper=r_signer_wrapper,
+        a_dry_run=a_dry_run,
+    )
+    t_store_signed: StoreSigned = StoreSigned(
+        uid="store_signed",
+        i_signed=t_sign_entries.o_signed,
+        r_signer_wrapper=r_signer_wrapper,
+    )
 
     d_: str = "Sign provided SignEntries with signer wrapper."
     d_i_sign_entries: str = "List of SignEntry objects to sign."
     d_i_task_id: str = "Task id used to identify signing requests."
-
-    def _run(self, on_update: OnUpdateCallable = None) -> None:
-        if not self.a_dry_run:
-            self.r_signer_wrapper.sign_containers(
-                [x for x in self.i_sign_entries],
-                task_id=self.i_task_id,
-            )
-        else:
-            for x in self.i_sign_entries:
-                LOG.info(f"[DRY] Signing {x}")
 
 
 class STMDSignSignEntries(STMD):
@@ -48,7 +107,7 @@ class STMDSignSignEntries(STMD):
     """
 
     _traction: Type[Traction] = SignSignEntries
-    r_signer_wrapper: SignerWrapper
+    r_signer_wrapper: Port[SIGNING_WRAPPERS]
     i_task_id: STMDSingleIn[int]
     i_sign_entries: TList[TList[SignEntry]]
     a_dry_run: bool = False
@@ -73,8 +132,11 @@ class SignEntriesFromContainerParts(Traction):
     d_i_container_parts: str = "Container parts to create sign entries from."
     d_o_sign_entries: str = "List of SignEntry objects"
 
-    def _run(self, on_update: OnUpdateCallable = None) -> None:
+    def _run(self) -> None:
         for digest, arch in zip(self.i_container_parts.digests, self.i_container_parts.arches):
+            # print("Sign entry", self.i_container_parts.make_reference(), digest, arch)
+            if arch == "multiarch":
+                continue
             self.o_sign_entries.append(
                 SignEntry(
                     digest=digest,
@@ -119,7 +181,7 @@ class VerifyEntries(Traction):
     i_public_key_file: str
     r_cosign_client: Union[CosignClient, FakeCosignClient]
 
-    def _run(self, on_update: OnUpdateCallable = None) -> None:
+    def _run(self) -> None:
         deduplicated_sign_entries = []
         references = []
         for entry in self.i_sign_entries:
