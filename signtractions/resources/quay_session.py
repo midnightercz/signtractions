@@ -14,7 +14,7 @@ class QuaySession(object):
         hostname: str | None = None,
         retries: int = 3,
         backoff_factor: int = 2,
-        verify: bool = False,
+        verify: bool = True,
         api: str = "docker",
     ) -> None:
         """
