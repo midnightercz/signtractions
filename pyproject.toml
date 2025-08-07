@@ -1,12 +1,12 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "signtractions"
 version = "0.0.6"
 description = "signtractions"
-readme = "README.rst"
+readme = "README.md"
 authors = [
     { name = "Jindrich Luza", email = "jluza@redhat.com" }
 ]
@@ -16,7 +16,7 @@ dependencies = [
     "koji",
     "requests",
     "requests_kerberos",
-    "pytractions",
+    "pytractions @ git+https://github.com/midnightercz/pytractions@main",
     "gssapi",
     "google-api-python-client",
     "google_auth_oauthlib",
@@ -27,7 +27,7 @@ dynamic=["entry-points"]
 Homepage = "https://github.com/midnightercz/signtractions"
 
 [tool.setuptools]
-package-dir = {"" = "signtractions"}
+package-dir = {"signtractions" = "signtractions"}
 
 [tool.setuptools.dynamic]
 entry-points = { file = "signtractions/entry_points.txt" }
