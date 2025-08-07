@@ -24,7 +24,7 @@ class Sigstore(Base):
         i = 1
         signatures = []
         while True:
-            ret = requests.get(f"{self.base_url}{image}@sha256={digest}/signature-{i}")
+            ret = requests.get(f"{self.base_url}{image}@sha256={digest}/signature-{i}", timeout=60)
             if ret.status_code == 404:
                 break
             if ret.status_code != 200:
