@@ -13,7 +13,7 @@ def test_init_docker_api(mock_session):
     session = quay_session.QuaySession(api="docker")
 
     assert session.hostname == "quay.io"
-    assert session.session.verify is False
+    assert session.session.verify is True
     assert session.session.headers["Host"] == "quay.io"
     assert session.api == "docker"
     assert session._api_url("some-endpoint") == "https://quay.io/v2/some-endpoint"
@@ -28,7 +28,7 @@ def test_init_quay_api(mock_session):
     session = quay_session.QuaySession(api="quay")
 
     assert session.hostname == "quay.io"
-    assert session.session.verify is False
+    assert session.session.verify is True
     assert session.session.headers["Host"] == "quay.io"
     assert session.api == "quay"
     assert session._api_url("some-endpoint") == "https://quay.io/api/v1/some-endpoint"

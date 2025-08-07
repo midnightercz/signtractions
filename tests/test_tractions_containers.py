@@ -60,7 +60,7 @@ def test_parse_container_image_reference_stmd_tag():
                 ]
             )
         ),
-        a_executor=Port[LoopExecutor](data=LoopExecutor()),
+        a_executor=Port[LoopExecutor](data=LoopExecutor(executor_type="loop_executor")),
     )
     t.run()
     assert t.o_container_parts == TList[ContainerParts](

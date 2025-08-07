@@ -1,5 +1,5 @@
 import pytest
-from typing import Union
+from typing import Union, Optional
 
 from pytractions.base import Port, TList, TDict
 
@@ -61,13 +61,13 @@ def test_sign_sign_entries():
     fsw.fake_entry_point_requests.append(
         FakeEPRunArgs(
             args=TList[str]([]),
-            kwargs=TDict[str, Union[str, TList[str]]](
+            kwargs=TDict[str, Union[str, TList[Optional[str]]]](
                 {
                     "config_file": "test",
                     "signing_key": "signing_key",
-                    "digest": TList[str](["sha256:123456"]),
-                    "identity": TList[str](["quay.io/containers/podman:latest"]),
-                    "reference": TList[str](["quay.io/containers/podman:latest"]),
+                    "digest": TList[Optional[str]](["sha256:123456"]),
+                    "identity": "quay.io/containers/podman:latest",
+                    "reference": TList[Optional[str]](["quay.io/containers/podman:latest"]),
                 }
             ),
         )
@@ -156,12 +156,12 @@ def test_sign_sign_entries_fail():
     fsw.fake_entry_point_requests.append(
         FakeEPRunArgs(
             args=TList[str]([]),
-            kwargs=TDict[str, Union[str, TList[str]]].content_from_json(
+            kwargs=TDict[str, Union[str, TList[Optional[str]]]].content_from_json(
                 {
                     "config_file": "test",
-                    "digest": TList[str](["sha256:123456"]),
-                    "reference": TList[str](["quay.io/containers/podman:latest"]),
-                    "identity": TList[str](["quay.io/containers/podman:latest"]),
+                    "digest": ["sha256:123456"],
+                    "reference": ["quay.io/containers/podman:latest"],
+                    "identity": "quay.io/containers/podman:latest",
                     "signing_key": "signing_key",
                 }
             ),
