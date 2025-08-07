@@ -3,6 +3,20 @@ from typing import Optional
 from pytractions.base import Base, TDict
 
 
+class ContainerSignInput(Base):
+    """Data structure to hold signing related information.
+
+    Args:
+        signing_key (str): Signing key.
+        reference (str): Reference in format <registry>/<repo>:<tag>
+        identity (str): Identity of signed container (<public-registry>/<repo>:<tag>)
+    """
+
+    reference: Optional[str] = ""
+    signing_key: str = ""
+    identity: Optional[str] = ""
+
+
 class SignEntry(Base):
     """Data structure to hold signing related information.
 
