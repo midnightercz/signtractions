@@ -12,7 +12,8 @@ from .exceptions import ManifestTypeError, RegistryAuthError, ManifestNotFoundEr
 from .quay_session import QuaySession
 from .types import ManifestList, Manifest
 
-from pytractions.base import Base, doc
+from pytractions.base import Base
+from pytractions.utils import doc
 
 
 LOG = logging.getLogger("signtractions.resources.quay_client")
@@ -35,6 +36,10 @@ class QuayClient(Base):
     d_username: str = doc("Username for Quay registry.")
     d_password: str = doc("Password for Quay registry.")
     d_host: str = doc("Quay registry hostname.")
+    d_token: str = doc(
+        "Quay oauth token for quay specific queries. "
+        + "It's not same as bearer token obtained from docker user-pass auth."
+    )
 
     def __post_init__(self, *args, **kwargs):
         """Post init for quay client."""

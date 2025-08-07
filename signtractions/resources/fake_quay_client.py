@@ -2,7 +2,8 @@ from typing import cast
 import json
 import logging
 
-from pytractions.base import TDict, TList, doc
+from pytractions.base import TDict, TList
+from pytractions.utils import doc
 
 from .quay_client import QuayClient, ManifestTypeError, ManifestNotFoundError
 from .types import ManifestList, Manifest
