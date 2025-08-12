@@ -10,8 +10,7 @@ FROM INSTALL as BUILD
 ADD docker/entry_point.sh /entry_point.sh
 RUN chmod +x /entry_point.sh
 ADD docker/redis.conf /etc/redis/redis.conf
-ADD docker/2022-IT-Root-CA.pem /etc/pki/ca-trust/source/anchors/2022-IT-Root-CA.pem
-ADD docker/2015-IT-Root-CA.pem /etc/pki/ca-trust/source/anchors/2015-IT-Root-CA.pem
+ADD docker/certs/* /etc/pki/ca-trust/source/anchors/
 
 FROM BUILD as CERTS
 
@@ -27,7 +26,7 @@ RUN redis-server /etc/redis/redis.conf
 FROM CERTS as PYTRACTIONS
 
 WORKDIR /workspace/
-RUN git clone https://github.com/midnightercz/pytractions.git
+RUN git clone https://github.com/midnightercz/pytractions.git@v0.0.10
 WORKDIR /workspace/pytractions
 RUN ls /workspace/pytractions
 RUN pip install --prefix /usr/ -r requirements.txt
