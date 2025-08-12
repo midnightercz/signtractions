@@ -16,7 +16,7 @@ dependencies = [
     "koji",
     "requests",
     "requests_kerberos",
-    "pytractions @ git+https://github.com/midnightercz/pytractions@main",
+    "pytractions==0.0.10",
     "gssapi",
     "google-api-python-client",
     "google_auth_oauthlib",
@@ -29,8 +29,9 @@ Homepage = "https://github.com/midnightercz/signtractions"
 [tool.setuptools]
 package-dir = {"signtractions" = "signtractions"}
 
+[tool.setuptools.package-data]
+"signtractions" = ["build-requirements.txt",  "generate-entry-points.py"]
+
 [tool.setuptools.dynamic]
 entry-points = { file = "signtractions/entry_points.txt" }
 
-[tool.setuptools.package-data]
-"*" = ["*.txt", "*.rst"]

@@ -24,27 +24,34 @@ jobs:
           username: ${{ secrets.QUAY_ID }}
           password: ${{ secrets.QUAY_PW }}
       - uses: actions/checkout@v4
-      - name: Get version
-        id: getversion
-        run:
-          pip install pytractions &&
-          echo "::set-output name=version::$(python setup.py --version)"
-      - name: Get name
-        id: getname
-        run:
-          pip install pytractions &&
-          echo "::set-output name=pkgname::$(python setup.py --name)"
+      - name: Get version and name
+        id: getnameversion
+        run: |
+          pip install toml pytractions
+          echo "installation done"
+          cat pyproject.toml
+          version=$(cat 'pyproject.toml' | python -c "import toml; import sys; print(toml.loads(sys.stdin.read())['project']['version'])")
+          name=$(cat 'pyproject.toml' | python -c "import toml; import sys; print(toml.loads(sys.stdin.read())['project']['name'])")
+          echo "version=$version"
+          echo "name=$name"
+          echo "version=$version" >> ${GITHUB_OUTPUT}
+          echo "name=$name" >> ${GITHUB_OUTPUT}
+          echo "get version done"
       - name: Get commit revision
         id: getrev
         run: echo "::set-output name=rev::$(git rev-parse --short HEAD)"
       - name: Building & Pushing Docker Image
         run: |
-          VERSION="${{ steps.getversion.outputs.version }}"
+          VERSION="${{ steps.getnameversion.outputs.version }}"
           RELEASE="${{ inputs.release }}"
           REV="${{ steps.getrev.outputs.rev }}"
           FINAL_VERSION=$([ "$RELEASE" = "true" ] && echo "${VERSION}" || echo "${VERSION}-${REV}")
           EXPIRE_LABEL=$([ "$RELEASE" = "true" ] && echo "" || echo "--label quay.expires-after=2d")
           FULL_VERSION="${VERSION}${REV}"
-          python setup.py sdist
-          docker build --build-arg=SDIST="dist/${{steps.getname.outputs.pkgname}}-${{steps.getversion.outputs.version}}.tar.gz"  -t quay.io/jluza/${{steps.getname.outputs.pkgname}}:$FINAL_VERSION $EXPIRE_LABEL -f docker/Dockerfile .
-          docker push quay.io/jluza/${{steps.getname.outputs.pkgname}}:$FINAL_VERSION
+          pip install build
+          pip install -r build-requirements.txt
+          python -m build
+          docker build -t ${{steps.getnameversion.outputs.name}}:base -f docker/Dockerfile.base .
+
+          docker build --build-arg=SOURCE="dist/${{steps.getnameversion.outputs.name}}-${VERSION}.tar.gz" -t quay.io/jluza/${{steps.getnameversion.outputs.name}}:$FINAL_VERSION $EXPIRE_LABEL -f docker/Dockerfile .
+          docker push quay.io/jluza/${{steps.getnameversion.outputs.name}}:$FINAL_VERSION

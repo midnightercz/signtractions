@@ -1,0 +1,18 @@
+FROM fedora:latest
+LABEL quay.expires-after=2d
+RUN mkdir -p /workspace/signtractions
+RUN microdnf install -y npm redis git gcc krb5-devel python3-devel git python3-qpid-proton openssl-devel tar https://github.com/sigstore/cosign/releases/download/v2.2.4/cosign-2.2.4-1.x86_64.rpm
+RUN pip install --prefix /usr/ certifi krb5 
+
+ADD docker/certs/* /etc/pki/ca-trust/source/anchors/
+RUN update-ca-trust
+ENV REQUESTS_CA_BUNDLE=/etc/pki/tls/certs/ca-bundle.trust.crt
+
+RUN mkdir /userdata
+VOLUME /userdata
+RUN mkdir /redis_data
+VOLUME /redis_data
+
+ADD docker/redis.conf /etc/redis/redis.conf
+RUN redis-server /etc/redis/redis.conf
+
