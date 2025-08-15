@@ -206,8 +206,10 @@ class MsgSignerWrapper(SignerWrapper):
     def _filter_to_sign(self, to_sign_entries: List[SignEntry]) -> List[SignEntry]:
         to_sign_digests = [x.digest for x in to_sign_entries]
         existing_signatures = [esig for esig in self._fetch_signatures(to_sign_digests)]
-        print(existing_signatures)
-        LOG.info("Existing signatures: %d", len(existing_signatures))
+        try:
+            LOG.info("Existing signatures: %d", len(existing_signatures))
+        except:
+            LOG.error("Failed to fetch existing signatures", exc_info=True)
         existing_signatures_drk = {
             (x["manifest_digest"], x["reference"], x["sig_key_id"]) for x in existing_signatures
         }

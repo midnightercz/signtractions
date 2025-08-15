@@ -13,14 +13,11 @@ RUN chmod +x /entry_point.sh
 WORKDIR /workspace/
 RUN git clone --branch v0.0.10 https://github.com/midnightercz/pytractions.git
 WORKDIR /workspace/pytractions
-RUN ls /workspace/pytractions
 RUN pip install --prefix /usr/ -r requirements.txt
 RUN pip install --prefix /usr/ .
 
 WORKDIR "/workspace/signtractions/"
 RUN pip install --prefix /usr/ -r build-requirements.txt
-RUN ls /workspace/signtractions/signtractions-*
-RUN ls /workspace/signtractions/signtractions-*/signtractions/
 RUN (cd /workspace/signtractions/signtractions-* ; python -m signtractions.generate_entry_points)
 RUN (cd /workspace/signtractions/signtractions-* ; pip install --prefix /usr/ . )
 

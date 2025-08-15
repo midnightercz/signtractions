@@ -39,7 +39,7 @@ jobs:
           echo "get version done"
       - name: Get commit revision
         id: getrev
-        run: echo "::set-output name=rev::$(git rev-parse --short HEAD)"
+        run: echo "rev=$(git rev-parse --short HEAD)" >> ${GITHUB_OUTPUT}
       - name: Building & Pushing Docker Image
         run: |
           VERSION="${{ steps.getnameversion.outputs.version }}"
