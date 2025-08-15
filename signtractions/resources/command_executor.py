@@ -10,10 +10,7 @@ from typing_extensions import Self
 
 from shlex import quote
 
-# from pubtools.tracing import get_trace_wrapper
-
-# tw = get_trace_wrapper()
-LOG = logging.getLogger("pubtools.quay")
+LOG = logging.getLogger()
 
 
 class Executor(object):

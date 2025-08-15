@@ -145,9 +145,15 @@ class SignerWrapper(Base):
             sign_entries (List[SignEntry]): Chunk of SignEntry to sign.
             task_id (str): Task ID to identify the signing task if needed.
         """
-        filtered_sign_entries = self._filter_to_sign(sign_entries)
-        # filtered_sign_entries = sign_entries
-
+        try:
+            filtered_sign_entries = self._filter_to_sign(sign_entries)
+        except Exception as e:
+            LOG.error(
+                "Failed to filter sign entries: %s",
+                e,
+                exc_info=True,
+            )
+            raise
         for sign_entry in filtered_sign_entries:
             print(
                 "Signing container %s %s %s",
@@ -206,8 +212,10 @@ class MsgSignerWrapper(SignerWrapper):
     def _filter_to_sign(self, to_sign_entries: List[SignEntry]) -> List[SignEntry]:
         to_sign_digests = [x.digest for x in to_sign_entries]
         existing_signatures = [esig for esig in self._fetch_signatures(to_sign_digests)]
-        print(existing_signatures)
-        LOG.info("Existing signatures: %d", len(existing_signatures))
+        try:
+            LOG.info("Existing signatures: %d", len(existing_signatures))
+        except Exception as e:  # noqa: F841
+            LOG.error("Failed to fetch existing signatures", exc_info=True)
         existing_signatures_drk = {
             (x["manifest_digest"], x["reference"], x["sig_key_id"]) for x in existing_signatures
         }

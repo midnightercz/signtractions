@@ -7,6 +7,21 @@ containerized container singing.
 
 ## How to use signtractions
 
+### Web UI
+
+Pull signtractions container image from quay.io
+```
+podman pull quay.io/jluza/signtractions:<version>
+```
+and run it with
+```
+podman run -u userdata:/userdata -p 4200:4200 quay.io/jluza/signtractions:<version>
+```
+In user userdata directory you can place client certificates and other files needed for various tractors.
+Then run `localhost:4200` in your web browser and follow the instructions.
+NOTE: It takes some time to start the web UI, so be patient.
+
+
 ### Locally
 1. Install signtractions on your local machine
 2. Run following python command to excute tractor or traction from signtractions
